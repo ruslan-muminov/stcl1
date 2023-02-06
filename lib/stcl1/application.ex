@@ -8,8 +8,6 @@ defmodule Stcl1.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
-      Stcl1.Repo,
       # Start the Telemetry supervisor
       Stcl1Web.Telemetry,
       # Start the PubSub system
