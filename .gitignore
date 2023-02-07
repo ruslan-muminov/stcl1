@@ -32,3 +32,5 @@ stcl1-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# ssl
+/priv/ssl/
