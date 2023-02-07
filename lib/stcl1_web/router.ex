@@ -18,6 +18,9 @@ defmodule Stcl1Web.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    # Telegram Bot Webhook
+    post "/tg_bot_webhook", TgBotController, :update
   end
 
   # Other scopes may use custom stacks.
