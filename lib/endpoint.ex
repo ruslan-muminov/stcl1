@@ -17,6 +17,7 @@ defmodule Stcl1.Endpoint do
 
   post "/tg_bot_webhook" do
     # MessageHandler.handle_message(conn)
+    Logger.info("TGBOT: #{inspect conn.body_params}")
     send_resp(conn, 200, "Ok")
   end
 
