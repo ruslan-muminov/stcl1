@@ -154,7 +154,7 @@ defmodule Stcl1.Updates do
   end
 
   defp send_message(bot_token, chat_id, message) do
-    Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message)
+    Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown")
     send_menu(bot_token, chat_id)
   end
 
