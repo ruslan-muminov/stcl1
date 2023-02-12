@@ -14,7 +14,7 @@ defmodule Stcl1.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :plug_cowboy],
+      extra_applications: [:logger],
       mod: {Stcl1.Application, []}
     ]
   end
@@ -23,8 +23,11 @@ defmodule Stcl1.MixProject do
   defp deps do
     [
       {:plug_cowboy, "~> 2.0"},
-      # {:telegram, git: "https://github.com/visciang/telegram.git", tag: "0.20.1"},
-      {:poison, "~> 3.1"}
+      {:telegram, github: "visciang/telegram", tag: "0.22.4"},
+      {:poison, "~> 3.1"},
+      {:quantum, "~> 3.0"},
+      {:memento, "~> 0.3.2"},
+      {:secrex, "~> 0.3", runtime: false}
     ]
   end
 end

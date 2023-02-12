@@ -1,16 +1,17 @@
 import Config
 
-config :stcl1, :plug_opts,
-  scheme: :https,
-  plug: Stcl1.Endpoint,
-  options: [port: 8443,
-            otp_app: :stcl1,
-            keyfile: "priv/ssl/stcl1.key",
-            certfile: "priv/ssl/stcl1.pem"]
+config :mnesia,
+  dir: '.mnesia/#{Mix.env}/#{node()}'  
 
-# if File.exists?("./config/#{Mix.env()}.exs") do
-#   import_config "#{Mix.env()}.exs"
-# end
+config :stcl1, Stcl1.Scheduler,
+  jobs: [
+    # Every second
+    # {{:extended, "*/5"}, {Stcl1.Updates, :get_updates, []}}
+  ]
+
+config :secrex,
+  # key_file: ".secret-key",
+  files: ["config/secret.exs"]
 
 if File.exists?("./config/secret.exs") do
   import_config "secret.exs"

@@ -7,12 +7,16 @@ defmodule Stcl1.Application do
 
   use Application
 
+  alias Stcl1.{Storage, Updates}
+
   def start(_type, _args) do
     children = [
-      Plug.Cowboy.child_spec(
-        Application.get_env(:stcl1, :plug_opts)
-      )
+      # Stcl1.Scheduler
     ]
+
+    Storage.init()
+
+    Updates.start_long_polling()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
