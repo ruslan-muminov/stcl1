@@ -3,7 +3,7 @@ defmodule Stcl1.Updates do
 
   alias Stcl1.{Messages, Storage, UpdatesOperator}
 
-  @operator_chat_id 70487131
+  @operator_chat_id 981934374
 
   @q_addres "Какой адрес у Стендап Клуба?"
   @q_buy_ticket_on_event "Хочу купить билеты на месте. Это возможно?"
@@ -17,11 +17,6 @@ defmodule Stcl1.Updates do
   @q_show_passport "Обязательно ли показывать паспорт?"
   @q_child_with_batya "Можно ли несовершеннолетнему с родителями?"
   @q_parking "Есть ли у вас парковка?"
-
-  [[@q_addres], [@q_buy_ticket_on_event], [@q_unrecieved_ticket], [@q_return_ticket],
-   [@q_shows_list], [@q_who_big], [@q_show_duration], [@q_tables_hundred],
-   [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
-
 
   # Stcl1.Updates.start_long_polling()
   def start_long_polling do

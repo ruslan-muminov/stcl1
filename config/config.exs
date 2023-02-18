@@ -1,7 +1,7 @@
 import Config
 
 config :mnesia,
-  dir: '.mnesia/#{Mix.env}/#{node()}'  
+  dir: '.mnesia/#{Mix.env}/#{node()}'
 
 config :stcl1, Stcl1.Scheduler,
   jobs: [
