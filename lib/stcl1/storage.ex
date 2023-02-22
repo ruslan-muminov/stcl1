@@ -118,6 +118,8 @@ defmodule Stcl1.Storage do
   ###### DEBUG
 
   def refresh_users_table do
+    nodes = [node()]
+
     Memento.Table.delete(Storage.User)
     Memento.Table.create(Storage.User, disc_copies: nodes)
   end
