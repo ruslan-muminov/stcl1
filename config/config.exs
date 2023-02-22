@@ -5,8 +5,8 @@ config :mnesia,
 
 config :stcl1, Stcl1.Scheduler,
   jobs: [
-    # Every second
-    # {{:extended, "*/5"}, {Stcl1.Updates, :get_updates, []}}
+    # Every 3 minutes
+    {"*/3 * * * *", {Stcl1.Scheduler, :maybe_finish_conversation, []}}
   ]
 
 config :secrex,

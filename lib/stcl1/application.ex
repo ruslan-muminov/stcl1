@@ -11,7 +11,7 @@ defmodule Stcl1.Application do
 
   def start(_type, _args) do
     children = [
-      # Stcl1.Scheduler
+      Stcl1.Scheduler
     ]
 
     Storage.init()

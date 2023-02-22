@@ -45,6 +45,7 @@ defmodule Stcl1.UpdatesOperator do
 
   def send_to_customer(bot_token, chat_id, message) do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown")
+    Storage.write_user(chat_id, :idle)
   end
 
   defp compose_questions_list([]), do: "Нет активных вопросов"

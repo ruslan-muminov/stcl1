@@ -166,7 +166,7 @@ defmodule Stcl1.Updates do
   end
 
   defp handle_message(bot_token, chat_id, text) do
-    user_state = Storage.read_user_state(chat_id)
+    {user_state, _} = Storage.read_user_state(chat_id)
 
     question =
       if user_state == :wait_who_big do
@@ -178,7 +178,7 @@ defmodule Stcl1.Updates do
 
     send_message(bot_token, chat_id, Messages.message(:operator_back))
     UpdatesOperator.send_to_operator(bot_token, question)
-    update_user_state(chat_id, :idle)
+    update_user_state(chat_id, :wait_for_answer)
   end
 
   def send_message(bot_token, chat_id, message) do

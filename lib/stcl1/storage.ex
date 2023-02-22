@@ -44,8 +44,10 @@ defmodule Stcl1.Storage do
   ###### User
 
   def write_user(chat_id, state) do
+    dt = DateTime.utc_now() |> DateTime.to_unix()
+
     Memento.transaction! fn ->
-      Memento.Query.write(%Storage.User{chat_id: chat_id, state: state})
+      Memento.Query.write(%Storage.User{chat_id: chat_id, state: state, dt: dt})
     end
   end
 
@@ -57,7 +59,7 @@ defmodule Stcl1.Storage do
 
     case user do
       nil -> nil
-      _ -> user.state
+      _ -> {user.state, user.dt}
     end
   end
 
@@ -111,5 +113,22 @@ defmodule Stcl1.Storage do
         %Storage.ButtonLog{button_name: button_name, count: count + 1}
       )
     end
+  end
+
+  ###### DEBUG
+
+  def refresh_users_table do
+    Memento.Table.delete(Storage.User)
+    Memento.Table.create(Storage.User, disc_copies: nodes)
+  end
+
+  def users_debug do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.User)
+    end
+  end
+
+  def add_test_user do
+    write_user(111, :finished)
   end
 end
