@@ -196,7 +196,8 @@ defmodule Stcl1.Updates do
   defp keyboard do
     [[@q_addres], [@q_buy_ticket_on_event], [@q_unrecieved_ticket], [@q_return_ticket],
      [@q_shows_list], [@q_who_big], [@q_show_duration], [@q_tables_hundred],
-     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
+     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking],
+     [%{web_app: %{url: "https://standupclub.ru/project/big-stand-up"}, text: "webAppButton"}]]
   end
 
   # Stcl1.Updates.save_question(70487131, "Здарова", :big_who)
