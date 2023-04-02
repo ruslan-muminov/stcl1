@@ -4,7 +4,7 @@ defmodule Stcl1.UpdatesOperator do
   alias Stcl1.Storage
   alias Stcl1.Storage.Question
 
-  @operator_chat_id 981934374
+  @operator_chat_id 891882667
 
   def handle_message(bot_token, "/questions") do
     questions =
