@@ -3,20 +3,34 @@ defmodule Stcl1.Updates do
 
   alias Stcl1.{Messages, Storage, UpdatesOperator}
 
-  @operator_chat_id 981934374
+  @operator_chat_id 891882667
 
-  @q_addres "Какой адрес у Стендап Клуба?"
+  @q_address "Какой адрес у Стендап Клуба?"
+  @q_shows_list "Какие шоу идут в Стендап Клубе сегодня?"
+
+  @q_tickets "Покупка и возврат билетов"
   @q_buy_ticket_on_event "Хочу купить билеты на месте. Это возможно?"
   @q_unrecieved_ticket "Приобрел билет, но мне он не пришел. Что делать?"
   @q_return_ticket "Хочу вернуть билет. Как это сделать?"
-  @q_shows_list "Какие шоу идут в Стендап Клубе сегодня?"
+
+  @q_show_advice "Посоветуйте, на какое шоу сходить"
+  @q_show_advice_standup "Стендап"
+  @q_show_advice_other "Другие"
+  @q_show_advice_something_else "Хочу посмотреть что-то еще"
+  @q_show_advice_yes "Да"
+  @q_show_advice_no "Нет"
+  @q_show_advice_some "Нескольких"
+  @q_show_advice_one "Одного"
+
+  @q_show_date "На какое шоу пойти с девушкой/парнем?"
   @q_who_big "Кто выступает на BigStandUp?"
   @q_show_duration "Сколько длится шоу?"
-  @q_tables_hundred "Как выглядят столы 100 и 100.1 в большом зале?"
   @q_order_food_drink "Хочу заказать еду и напитки. Могу ли я это сделать?"
   @q_show_passport "Обязательно ли показывать паспорт?"
   @q_child_with_batya "Можно ли несовершеннолетнему с родителями?"
   @q_parking "Есть ли у вас парковка?"
+
+  @q_back "В главное меню"
 
   # Stcl1.Updates.start_long_polling()
   def start_long_polling do
@@ -39,7 +53,7 @@ defmodule Stcl1.Updates do
       {:ok, updates} ->
         last_update_id =
           Enum.reduce(updates, :empty, fn update, _acc ->
-            # Logger.info("Update: #{inspect update}")
+            Logger.info("Update: #{inspect update}")
             handle_update(bot_token, update)
             update["update_id"]
           end)
@@ -63,14 +77,18 @@ defmodule Stcl1.Updates do
 
   defp handle_update(bot_token, update) do
     with {:ok, {chat_id, date, text}} <- parse_update(update),
-         :continue <- skip_outdated_updates(date) do
-      handle_message(bot_token, chat_id, text)
+         :continue <- skip_outdated_updates(date),
+         {user_state, _} <- Storage.read_user_state(chat_id) do
+      handle_message(bot_token, chat_id, user_state, text)
     else
       :skip ->
         # пропускаем этот апдейт
         :ok
       {:error, :parse_update_error} ->
         # прислали хуйню
+        :ok
+      :nil ->
+        # проблемы с бд
         :ok
     end
   end
@@ -92,41 +110,122 @@ defmodule Stcl1.Updates do
   end
 
   # extra commands for operator
-  defp handle_message(bot_token, @operator_chat_id, text) do
+  defp handle_message(bot_token, @operator_chat_id, _user_state, text) do
     UpdatesOperator.handle_message(bot_token, text)
   end
 
-  defp handle_message(bot_token, chat_id, "/start") do
+  defp handle_message(bot_token, chat_id, _user_state, "/start") do
     send_message(bot_token, chat_id, Messages.message(:first))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_addres) do
-    send_message(bot_token, chat_id, Messages.message(:q_addres))
+  defp handle_message(bot_token, chat_id, _user_state, @q_back) do
+    send_menu(bot_token, chat_id)
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_buy_ticket_on_event) do
-    send_message(bot_token, chat_id, Messages.message(:q_buy_ticket_on_event))
+  defp handle_message(bot_token, chat_id, _user_state, @q_address) do
+    send_message(bot_token, chat_id, Messages.message(:q_address))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_unrecieved_ticket) do
-    send_message(bot_token, chat_id, Messages.message(:q_unrecieved_ticket))
-    update_user_state(chat_id, :idle)
-  end
-
-  defp handle_message(bot_token, chat_id, @q_return_ticket) do
-    send_message(bot_token, chat_id, Messages.message(:q_return_ticket))
-    update_user_state(chat_id, :idle)
-  end
-
-  defp handle_message(bot_token, chat_id, @q_shows_list) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_shows_list) do
     send_message(bot_token, chat_id, Messages.message(:q_shows_list))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_who_big) do
+  ###################################################################
+  # Покупка и возврат билетов
+  #
+  defp handle_message(bot_token, chat_id, _user_state, @q_tickets) do
+    send_tickets_menu(bot_token, chat_id)
+    update_user_state(chat_id, :tickets)
+  end
+
+  defp handle_message(bot_token, chat_id, :tickets, @q_buy_ticket_on_event) do
+    send_message(bot_token, chat_id, Messages.message(:q_buy_ticket_on_event))
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, :tickets, @q_unrecieved_ticket) do
+    send_message(bot_token, chat_id, Messages.message(:q_unrecieved_ticket))
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, :tickets, @q_return_ticket) do
+    send_message(bot_token, chat_id, Messages.message(:q_return_ticket))
+    update_user_state(chat_id, :idle)
+  end
+  #
+  ###################################################################
+
+  ###################################################################
+  # Анкета: на какое шоу пойти
+  #
+  defp handle_message(bot_token, chat_id, _user_state, @q_show_advice) do
+    variants = [[@q_show_advice_standup], [@q_show_advice_other], [@q_back]]
+    message = Messages.message(:q_show_advice1)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_standup) do
+    variants = [[@q_show_advice_something_else], [@q_back]]
+    message = Messages.message(:q_show_advice_standup)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_other) do
+    variants = [[@q_show_advice_something_else], [@q_back]]
+    message = Messages.message(:q_show_advice_other)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_something_else) do
+    variants = [[@q_show_advice_yes], [@q_show_advice_no], [@q_back]]
+    message = Messages.message(:q_show_advice2)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_yes) do
+    variants = [[@q_back]]
+    message = Messages.message(:q_show_advice_yes)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_no) do
+    variants = [[@q_show_advice_some], [@q_show_advice_one], [@q_back]]
+    message = Messages.message(:q_show_advice3)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_some) do
+    variants = [[@q_back]]
+    message = Messages.message(:q_show_advice_some)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_one) do
+    variants = [[@q_back]]
+    message = Messages.message(:q_show_advice_one)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+  #
+  ###################################################################
+
+  defp handle_message(bot_token, chat_id, _user_state, @q_show_date) do
+    send_message(bot_token, chat_id, Messages.message(:q_show_date))
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, _user_state, @q_who_big) do
     Telegram.Api.request(
       bot_token,
       "sendMessage",
@@ -135,39 +234,32 @@ defmodule Stcl1.Updates do
     update_user_state(chat_id, :wait_who_big)
   end
 
-  defp handle_message(bot_token, chat_id, @q_show_duration) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_show_duration) do
     send_message(bot_token, chat_id, Messages.message(:q_show_duration))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_tables_hundred) do
-    send_message(bot_token, chat_id, Messages.message(:q_tables_hundred))
-    update_user_state(chat_id, :idle)
-  end
-
-  defp handle_message(bot_token, chat_id, @q_order_food_drink) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_order_food_drink) do
     send_message(bot_token, chat_id, Messages.message(:q_order_food_drink))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_show_passport) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_show_passport) do
     send_message(bot_token, chat_id, Messages.message(:q_show_passport))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_child_with_batya) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_child_with_batya) do
     send_message(bot_token, chat_id, Messages.message(:q_child_with_batya))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, @q_parking) do
+  defp handle_message(bot_token, chat_id, _user_state, @q_parking) do
     send_message(bot_token, chat_id, Messages.message(:q_parking))
     update_user_state(chat_id, :idle)
   end
 
-  defp handle_message(bot_token, chat_id, text) do
-    {user_state, _} = Storage.read_user_state(chat_id)
-
+  defp handle_message(bot_token, chat_id, user_state, text) do
     question =
       if user_state == :wait_who_big do
         save_question(chat_id, text, :big_who)
@@ -188,16 +280,31 @@ defmodule Stcl1.Updates do
 
   defp send_menu(bot_token, chat_id) do
     message = Messages.message(:menu)
-    keyboard = keyboard()
+    keyboard = main_keyboard()
     keyboard_markup = %{one_time_keyboard: false, resize_keyboard: true, keyboard: keyboard}
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, reply_markup: {:json, keyboard_markup})
   end
 
-  defp keyboard do
-    [[@q_addres], [@q_buy_ticket_on_event], [@q_unrecieved_ticket], [@q_return_ticket],
-     [@q_shows_list], [@q_who_big], [@q_show_duration], [@q_tables_hundred],
-     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking],
-     [%{web_app: %{url: "https://standupclub.ru/project/big-stand-up"}, text: "webAppButton"}]]
+  defp main_keyboard do
+    [[@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
+     [@q_show_date], [@q_who_big], [@q_show_duration], [@q_order_food_drink],
+     [@q_show_passport], [@q_child_with_batya], [@q_parking]]
+  end
+
+  defp send_tickets_menu(bot_token, chat_id) do
+    message = @q_tickets
+    keyboard = tickets_keyboard()
+    keyboard_markup = %{one_time_keyboard: false, resize_keyboard: true, keyboard: keyboard}
+    Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, reply_markup: {:json, keyboard_markup})
+  end
+
+  defp tickets_keyboard do
+    [[@q_buy_ticket_on_event], [@q_unrecieved_ticket], [@q_return_ticket], [@q_back]]
+  end
+
+  defp send_variants(bot_token, chat_id, variants, message) do
+    keyboard_markup = %{one_time_keyboard: false, resize_keyboard: true, keyboard: variants}
+    Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown", reply_markup: {:json, keyboard_markup})
   end
 
   # Stcl1.Updates.save_question(70487131, "Здарова", :big_who)
