@@ -29,10 +29,11 @@ defmodule Stcl1.UpdatesOperator do
     chat_id = String.to_integer(chat_id_str)
 
     case Storage.read_question(chat_id) do
-      {question_type, question, :wait} ->
+      {question_type, question, :wait, question_dt} ->
         answer = compose_answer(question_type, question, answer)
         send_to_customer(bot_token, chat_id, answer)
         Storage.write_question(chat_id, {question_type, question, :done})
+        Storage.write_question_log(chat_id, question, question_dt, answer)
         send_to_operator(bot_token, "Ты умничка!")
       _ ->
         send_to_operator(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос")
@@ -47,6 +48,7 @@ defmodule Stcl1.UpdatesOperator do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown")
     Storage.write_user(chat_id, :idle)
   end
+
 
   defp compose_questions_list([]), do: "Нет активных вопросов"
   defp compose_questions_list(questions) do

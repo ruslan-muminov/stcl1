@@ -268,7 +268,7 @@ defmodule Stcl1.Updates do
       if user_state == :wait_who_big do
         save_question(chat_id, text, :big_who)
       else
-        Storage.write_question_log(chat_id, text)
+        Storage.write_question_log(chat_id, text, nil, nil)
         save_question(chat_id, text, :other)
       end
 

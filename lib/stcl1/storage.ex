@@ -83,18 +83,19 @@ defmodule Stcl1.Storage do
 
     case question do
       nil -> nil
-      _ -> {question.question_type, question.question, question.status}
+      _ -> {question.question_type, question.question, question.status, question.dt}
     end
   end
 
   ###### QuestionLog
 
-  def write_question_log(chat_id, question) do
+  def write_question_log(chat_id, question, question_dt, answer) do
     dt = DateTime.utc_now() |> DateTime.to_unix()
+    dt_diff = if is_nil(question_dt), do: nil, else: dt - question_dt
 
     Memento.transaction! fn ->
       Memento.Query.write(
-        %Storage.QuestionLog{question: question, chat_id: chat_id, dt: dt}
+        %Storage.QuestionLog{question: question, answer: answer, chat_id: chat_id, dt: dt, dt_diff: dt_diff}
       )
     end
   end
@@ -116,6 +117,19 @@ defmodule Stcl1.Storage do
   end
 
   ###### DEBUG
+
+  def refresh_question_log_table do
+    nodes = [node()]
+
+    Memento.Table.delete(Storage.QuestionLog)
+    Memento.Table.create(Storage.QuestionLog, disc_copies: nodes)
+  end
+
+  def question_logs_debug do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.QuestionLog)
+    end
+  end
 
   def refresh_users_table do
     nodes = [node()]
