@@ -77,8 +77,15 @@ defmodule Stcl1.Updates do
 
   defp handle_update(bot_token, update) do
     with {:ok, {chat_id, date, text}} <- parse_update(update),
-         :continue <- skip_outdated_updates(date),
-         {user_state, _} <- Storage.read_user_state(chat_id) do
+         :continue <- skip_outdated_updates(date) do
+      user_state =
+        case Storage.read_user_state(chat_id) do
+          nil ->
+            update_user_state(chat_id, :idle)
+            :idle
+          {state, _} ->
+            state
+        end
       handle_message(bot_token, chat_id, user_state, text)
     else
       :skip ->
@@ -86,9 +93,6 @@ defmodule Stcl1.Updates do
         :ok
       {:error, :parse_update_error} ->
         # прислали хуйню
-        :ok
-      :nil ->
-        # проблемы с бд
         :ok
     end
   end
