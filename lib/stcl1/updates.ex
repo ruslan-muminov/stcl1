@@ -24,6 +24,7 @@ defmodule Stcl1.Updates do
 
   @q_show_date "На какое шоу пойти с девушкой/парнем?"
   @q_who_big "Кто выступает на BigStandUp?"
+  @q_where_schedule "Где можно посмотреть расписание и составы на ближайшие шоу?"
   @q_show_duration "Сколько длится шоу?"
   @q_order_food_drink "Хочу заказать еду и напитки. Могу ли я это сделать?"
   @q_show_passport "Обязательно ли показывать паспорт?"
@@ -238,6 +239,11 @@ defmodule Stcl1.Updates do
     update_user_state(chat_id, :wait_who_big)
   end
 
+  defp handle_message(bot_token, chat_id, _user_state, @q_where_schedule) do
+    send_message(bot_token, chat_id, Messages.message(:q_where_schedule))
+    update_user_state(chat_id, :idle)
+  end
+
   defp handle_message(bot_token, chat_id, _user_state, @q_show_duration) do
     send_message(bot_token, chat_id, Messages.message(:q_show_duration))
     update_user_state(chat_id, :idle)
@@ -291,8 +297,8 @@ defmodule Stcl1.Updates do
 
   defp main_keyboard do
     [[@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
-     [@q_show_date], [@q_who_big], [@q_show_duration], [@q_order_food_drink],
-     [@q_show_passport], [@q_child_with_batya], [@q_parking]]
+     [@q_show_date], [@q_who_big], [@q_where_schedule], [@q_show_duration],
+     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
   end
 
   defp send_tickets_menu(bot_token, chat_id) do
