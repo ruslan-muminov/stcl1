@@ -1,7 +1,7 @@
 defmodule Stcl1.Updates do
   require Logger
 
-  alias Stcl1.{Messages, Storage, UpdatesOperator}
+  alias Stcl1.{Messages, Pictures, Storage, UpdatesOperator}
 
   @operator_chat_id 891882667
 
@@ -15,12 +15,11 @@ defmodule Stcl1.Updates do
 
   @q_show_advice "Посоветуйте, на какое шоу сходить"
   @q_show_advice_standup "Стендап"
-  @q_show_advice_other "Другие"
+  @q_show_advice_experiment "Комедийные эксперименты"
+  @q_show_advice_panel "Пэнел шоу"
   @q_show_advice_something_else "Хочу посмотреть что-то еще"
   @q_show_advice_yes "Да"
   @q_show_advice_no "Нет"
-  @q_show_advice_some "Нескольких"
-  @q_show_advice_one "Одного"
 
   @q_show_date "На какое шоу пойти с девушкой/парнем?"
   @q_who_big "Кто выступает на BigStandUp?"
@@ -168,22 +167,32 @@ defmodule Stcl1.Updates do
   # Анкета: на какое шоу пойти
   #
   defp handle_message(bot_token, chat_id, _user_state, @q_show_advice) do
-    variants = [[@q_show_advice_standup], [@q_show_advice_other], [@q_back]]
+    variants = [[@q_show_advice_standup], [@q_show_advice_experiment], [@q_show_advice_panel], [@q_back]]
     message = Messages.message(:q_show_advice1)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
   end
 
   defp handle_message(bot_token, chat_id, :advice, @q_show_advice_standup) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group1))
     variants = [[@q_show_advice_something_else], [@q_back]]
     message = Messages.message(:q_show_advice_standup)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
   end
 
-  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_other) do
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_experiment) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group2))
     variants = [[@q_show_advice_something_else], [@q_back]]
-    message = Messages.message(:q_show_advice_other)
+    message = Messages.message(:q_show_advice_experiment)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_panel) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group3))
+    variants = [[@q_show_advice_something_else], [@q_back]]
+    message = Messages.message(:q_show_advice_panel)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
   end
@@ -196,6 +205,7 @@ defmodule Stcl1.Updates do
   end
 
   defp handle_message(bot_token, chat_id, :advice, @q_show_advice_yes) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group4))
     variants = [[@q_back]]
     message = Messages.message(:q_show_advice_yes)
     send_variants(bot_token, chat_id, variants, message)
@@ -203,22 +213,9 @@ defmodule Stcl1.Updates do
   end
 
   defp handle_message(bot_token, chat_id, :advice, @q_show_advice_no) do
-    variants = [[@q_show_advice_some], [@q_show_advice_one], [@q_back]]
-    message = Messages.message(:q_show_advice3)
-    send_variants(bot_token, chat_id, variants, message)
-    update_user_state(chat_id, :advice)
-  end
-
-  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_some) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group5))
     variants = [[@q_back]]
-    message = Messages.message(:q_show_advice_some)
-    send_variants(bot_token, chat_id, variants, message)
-    update_user_state(chat_id, :advice)
-  end
-
-  defp handle_message(bot_token, chat_id, :advice, @q_show_advice_one) do
-    variants = [[@q_back]]
-    message = Messages.message(:q_show_advice_one)
+    message = Messages.message(:q_show_advice_no)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
   end
@@ -317,6 +314,10 @@ defmodule Stcl1.Updates do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown", reply_markup: {:json, keyboard_markup})
   end
 
+  defp send_album(bot_token, chat_id, media) do
+    Telegram.Api.request(bot_token, "sendMediaGroup", chat_id: chat_id, media: media)
+  end
+
   # Stcl1.Updates.save_question(70487131, "Здарова", :big_who)
   defp save_question(chat_id, text, question_type) do
     Storage.write_question(chat_id, {question_type, text, :wait})
@@ -325,5 +326,12 @@ defmodule Stcl1.Updates do
 
   defp update_user_state(chat_id, state) do
     Storage.write_user(chat_id, state)
+  end
+
+  # Stcl1.Updates.test111()
+  def test111 do
+    chat_id = 70487131
+    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: "AgACAgIAAxkBAAIVFWRaauo4reNadx_gHXkvDeWWu7z5AAKPyTEbwCzQStkmfqvUEoDCAQADAgADcwADLwQ")
   end
 end
