@@ -63,6 +63,15 @@ defmodule Stcl1.Storage do
     end
   end
 
+  def users_count do
+    users =
+      Memento.transaction! fn ->
+        Memento.Query.all(Storage.User)
+      end
+
+    length(users)
+  end
+
   ###### Question
 
   def write_question(chat_id, {question_type, question, status}) do

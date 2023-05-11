@@ -17,6 +17,11 @@ defmodule Stcl1.UpdatesOperator do
     send_to_operator(bot_token, message)
   end
 
+  def handle_message(bot_token, "/users_count") do
+    users_count = Storage.users_count()
+    send_to_operator(bot_token, "Количество пользователей бота: #{inspect users_count}")
+  end
+
   def handle_message(bot_token, text) do
     case String.split(text, ["/", " "], parts: 3) do
       ["", _] -> :hueta
