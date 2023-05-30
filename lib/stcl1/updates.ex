@@ -79,7 +79,7 @@ defmodule Stcl1.Updates do
     with {:ok, {chat_id, date, text}} <- parse_update(update),
          :continue <- skip_outdated_updates(date) do
       user_state =
-        case Storage.read_user_state(chat_id) do
+        case Storage.read_user_ext_state(chat_id) do
           nil ->
             update_user_state(chat_id, :idle)
             :idle
