@@ -14,6 +14,7 @@ defmodule Stcl1.Storage do
 
     Memento.Table.create(Storage.Option, disc_copies: nodes)
     Memento.Table.create(Storage.User, disc_copies: nodes)
+    Memento.Table.create(Storage.UserExt, disc_copies: nodes)
     Memento.Table.create(Storage.Question, disc_copies: nodes)
     Memento.Table.create(Storage.QuestionLog, disc_copies: nodes)
     Memento.Table.create(Storage.ButtonLog, disc_copies: nodes)
@@ -70,6 +71,58 @@ defmodule Stcl1.Storage do
       end
 
     length(users)
+  end
+
+  ###### UserExt
+
+  def reg_user_ext(chat_id) do
+    dt = DateTime.utc_now() |> DateTime.to_unix()
+
+    Memento.transaction! fn ->
+      Memento.Query.write(%Storage.UserExt{chat_id: chat_id, state: :idle, dt: dt, dt_reg: dt})
+    end
+  end
+
+  def write_user_state_ext(chat_id, state) do
+    dt = DateTime.utc_now() |> DateTime.to_unix()
+
+    Memento.transaction! fn ->
+      Memento.Query.write(%Storage.UserExt{chat_id: chat_id, state: state, dt: dt})
+    end
+  end
+
+  def read_user_ext_state(chat_id) do
+    user =
+      Memento.transaction! fn ->
+        Memento.Query.read(Storage.UserExt, chat_id)
+      end
+
+    case user do
+      nil -> nil
+      _ -> {user.state, user.dt}
+    end
+  end
+
+  def users_ext_count do
+    users =
+      Memento.transaction! fn ->
+        Memento.Query.all(Storage.UserExt)
+      end
+
+    length(users)
+  end
+
+  def migrate_users do
+    users =
+      Memento.transaction! fn ->
+        Memento.Query.all(Storage.User)
+      end
+
+    Memento.transaction! fn ->
+      Enum.each(users, fn user ->
+        Memento.Query.write(%Storage.UserExt{chat_id: user.chat_id, state: user.state, dt: user.dt, dt_reg: user.dt})
+      end)
+    end
   end
 
   ###### Question
@@ -150,6 +203,12 @@ defmodule Stcl1.Storage do
   def users_debug do
     Memento.transaction! fn ->
       Memento.Query.all(Storage.User)
+    end
+  end
+
+  def users_ext_debug do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.UserExt)
     end
   end
 

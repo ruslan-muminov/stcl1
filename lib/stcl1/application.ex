@@ -11,12 +11,12 @@ defmodule Stcl1.Application do
 
   def start(_type, _args) do
     children = [
-      Stcl1.Scheduler
+      # Stcl1.Scheduler
     ]
 
     Storage.init()
 
-    Updates.start_long_polling()
+    # Updates.start_long_polling()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -120,7 +120,7 @@ defmodule Stcl1.Updates do
 
   defp handle_message(bot_token, chat_id, _user_state, "/start") do
     send_message(bot_token, chat_id, Messages.message(:first))
-    update_user_state(chat_id, :idle)
+    reg_user(chat_id)
   end
 
   defp handle_message(bot_token, chat_id, _user_state, @q_back) do
@@ -324,8 +324,12 @@ defmodule Stcl1.Updates do
     UpdatesOperator.compose_question(question_type, text, chat_id)
   end
 
+  defp reg_user(chat_id) do
+    Storage.reg_user_ext(chat_id)
+  end
+
   defp update_user_state(chat_id, state) do
-    Storage.write_user(chat_id, state)
+    Storage.write_user_state_ext(chat_id, state)
   end
 
   # Stcl1.Updates.test111()

@@ -23,7 +23,7 @@ defmodule Stcl1.Scheduler do
         chat_id: user.chat_id, text: Messages.message(:finish), parse_mode: "Markdown"
       )
 
-      Storage.write_user(user.chat_id, :finished)
+      Storage.write_user_state_ext(user.chat_id, :finished)
     end)
   end
 end

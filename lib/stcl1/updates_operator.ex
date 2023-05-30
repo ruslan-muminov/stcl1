@@ -18,7 +18,7 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   def handle_message(bot_token, "/users_count") do
-    users_count = Storage.users_count()
+    users_count = Storage.users_ext_count()
     send_to_operator(bot_token, "Количество пользователей бота: #{inspect users_count}")
   end
 
@@ -51,7 +51,7 @@ defmodule Stcl1.UpdatesOperator do
 
   def send_to_customer(bot_token, chat_id, message) do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown")
-    Storage.write_user(chat_id, :idle)
+    Storage.write_user_state_ext(chat_id, :idle)
   end
 
 
