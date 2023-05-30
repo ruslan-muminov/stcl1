@@ -27,6 +27,26 @@ defmodule Stcl1.UpdatesOperator do
     send_to_operator(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}")
   end
 
+  # Stcl1.UpdatesOperator.handle_message("qwe", "/ads 2023-01-23T23:50:07 zdarova snup doc")
+  def handle_message(bot_token, "/ads " <> datetime_and_text) do
+    message =
+      with [datetime_iso, text] <- String.split(datetime_and_text, " ", parts: 2),
+          {:ok, send_datetime, _} <- DateTime.from_iso8601(datetime_iso <> "+03:00"),
+          send_unix <- DateTime.to_unix(send_datetime) do
+        id_ads = Storage.create_ads(send_unix, text)
+        "Рекламное сообщение с id = #{id_ads} успешно создано"
+      else
+        _ -> "Неверный формат входных данных"
+      end
+
+      send_to_operator(bot_token, message)
+  end
+
+  def handle_message(bot_token, "/delete_ads " <> id_ads) do
+    Storage.delete_ads(id_ads)
+    send_to_operator(bot_token, "Рекламное сообщение с id = #{id_ads} удалено")
+  end
+
   def handle_message(bot_token, text) do
     case String.split(text, ["/", " "], parts: 3) do
       ["", _] -> :hueta

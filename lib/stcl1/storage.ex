@@ -18,6 +18,7 @@ defmodule Stcl1.Storage do
     Memento.Table.create(Storage.Question, disc_copies: nodes)
     Memento.Table.create(Storage.QuestionLog, disc_copies: nodes)
     Memento.Table.create(Storage.ButtonLog, disc_copies: nodes)
+    Memento.Table.create(Storage.Ads, disc_copies: nodes)
   end
 
   ###### Option
@@ -87,7 +88,13 @@ defmodule Stcl1.Storage do
     dt = DateTime.utc_now() |> DateTime.to_unix()
 
     Memento.transaction! fn ->
-      Memento.Query.write(%Storage.UserExt{chat_id: chat_id, state: state, dt: dt})
+      dt_reg =
+        case Memento.Query.read(Storage.UserExt, chat_id) do
+          nil -> dt
+          user_ext -> user_ext.dt_reg
+        end
+
+      Memento.Query.write(%Storage.UserExt{chat_id: chat_id, state: state, dt: dt, dt_reg: dt_reg})
     end
   end
 
@@ -128,6 +135,12 @@ defmodule Stcl1.Storage do
       Enum.each(users, fn user ->
         Memento.Query.write(%Storage.UserExt{chat_id: user.chat_id, state: user.state, dt: user.dt, dt_reg: user.dt})
       end)
+    end
+  end
+
+  def delete_user_ext(chat_id) do
+    Memento.transaction! fn ->
+      Memento.Query.delete(Storage.UserExt, chat_id)
     end
   end
 
@@ -181,6 +194,45 @@ defmodule Stcl1.Storage do
       Memento.Query.write(
         %Storage.ButtonLog{button_name: button_name, count: count + 1}
       )
+    end
+  end
+
+  ###### Ads
+
+  def create_ads(send_dt, text) do
+    id = UUID.uuid4()
+
+    Memento.transaction! fn ->
+      Memento.Query.write(
+        %Storage.Ads{id: id, send_dt: send_dt, text: text, status: :wait}
+      )
+    end
+
+    id
+  end
+
+  # Stcl1.Storage
+  def update_ads_status(id, status) do
+    Memento.transaction! fn ->
+      case Memento.Query.read(Storage.Ads, id) do
+        nil -> :ok
+        ads ->
+          Memento.Query.write(
+            %Storage.Ads{id: id, status: status, send_dt: ads.send_dt, text: ads.text}
+          )
+      end
+    end
+  end
+
+  def delete_ads(id) do
+    Memento.transaction! fn ->
+      Memento.Query.delete(Storage.Ads, id)
+    end
+  end
+
+  def all_ads do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.Ads)
     end
   end
 

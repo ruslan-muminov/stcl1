@@ -33,7 +33,8 @@ defmodule Stcl1.MixProject do
       {:poison, "~> 3.1"},
       {:quantum, "~> 3.0"},
       {:memento, "~> 0.3.2"},
-      {:secrex, "~> 0.3", runtime: false}
+      {:secrex, "~> 0.3", runtime: false},
+      {:uuid, "~> 1.1"}
     ]
   end
 end
