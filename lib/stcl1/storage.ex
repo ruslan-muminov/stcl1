@@ -112,6 +112,12 @@ defmodule Stcl1.Storage do
     length(users)
   end
 
+  def users_ext_all do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.UserExt)
+    end
+  end
+
   def migrate_users do
     users =
       Memento.transaction! fn ->
@@ -206,11 +212,11 @@ defmodule Stcl1.Storage do
     end
   end
 
-  def users_ext_debug do
-    Memento.transaction! fn ->
-      Memento.Query.all(Storage.UserExt)
-    end
-  end
+  # def users_ext_debug do
+  #   Memento.transaction! fn ->
+  #     Memento.Query.all(Storage.UserExt)
+  #   end
+  # end
 
   def add_test_user do
     write_user(111, :finished)

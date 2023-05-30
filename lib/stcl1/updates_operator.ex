@@ -22,6 +22,11 @@ defmodule Stcl1.UpdatesOperator do
     send_to_operator(bot_token, "Количество пользователей бота: #{inspect users_count}")
   end
 
+  def handle_message(bot_token, "/users_dates " <> start_date) do
+    message = compose_users_regs(start_date)
+    send_to_operator(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}")
+  end
+
   def handle_message(bot_token, text) do
     case String.split(text, ["/", " "], parts: 3) do
       ["", _] -> :hueta
@@ -54,6 +59,29 @@ defmodule Stcl1.UpdatesOperator do
     Storage.write_user_state_ext(chat_id, :idle)
   end
 
+
+  defp compose_users_regs(start_date_iso) do
+    with {:ok, start_datetime, _} <- DateTime.from_iso8601(start_date_iso <> "T00:00:00Z"),
+         start_unix <- DateTime.to_unix(start_datetime) do
+      users_ext = Storage.users_ext_all()
+
+      users_ext
+      |> Enum.flat_map(fn user_ext ->
+        if user_ext.dt_reg > start_unix do
+          {:ok, datetime_reg} = DateTime.from_unix(user_ext.dt_reg)
+          date_reg_iso = datetime_reg |> DateTime.to_date() |> Date.to_iso8601()
+          [date_reg_iso]
+        else
+          []
+        end
+      end)
+      |> Enum.sort()
+      |> Enum.join("\n")
+    else
+      {:error, _} ->
+        "Неверный формат даты"
+    end
+  end
 
   defp compose_questions_list([]), do: "Нет активных вопросов"
   defp compose_questions_list(questions) do
