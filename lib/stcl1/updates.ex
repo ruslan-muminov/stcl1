@@ -93,6 +93,7 @@ defmodule Stcl1.Updates do
         :ok
       {:error, :parse_update_error} ->
         # прислали хуйню
+        Logger.error("parse_update_error: #{inspect(update)}")
         :ok
     end
   end
@@ -337,6 +338,15 @@ defmodule Stcl1.Updates do
   def test111 do
     chat_id = 70487131
     bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
-    Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: "AgACAgIAAxkBAAIVFWRaauo4reNadx_gHXkvDeWWu7z5AAKPyTEbwCzQStkmfqvUEoDCAQADAgADcwADLwQ")
+    # Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: "AgACAgIAAxkBAAIVFWRaauo4reNadx_gHXkvDeWWu7z5AAKPyTEbwCzQStkmfqvUEoDCAQADAgADcwADLwQ")
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group6))
+  end
+
+
+  # Stcl1.Updates.test222("AgACAgIAAxkBAAMjZIM3m7GUPm_kBAQhX3yFKQiapFYAArrMMRv1ORhIxuA_5HIHUwoBAAMCAANzAAMvBA")
+  def test222(photo) do
+    chat_id = 70487131
+    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: photo)
   end
 end
