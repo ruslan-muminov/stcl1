@@ -93,7 +93,6 @@ defmodule Stcl1.Updates do
         :ok
       {:error, :parse_update_error} ->
         # прислали хуйню
-        Logger.error("parse_update_error: #{inspect(update)}")
         :ok
     end
   end
