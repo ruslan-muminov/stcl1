@@ -223,6 +223,7 @@ defmodule Stcl1.Updates do
   ###################################################################
 
   defp handle_message(bot_token, chat_id, _user_state, @q_show_date) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group6))
     send_message(bot_token, chat_id, Messages.message(:q_show_date))
     update_user_state(chat_id, :idle)
   end
