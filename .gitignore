@@ -37,3 +37,6 @@ npm-debug.log
 
 # mnesia
 /.mnesia/
+
+# Logger
+/log/

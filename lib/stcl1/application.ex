@@ -10,11 +10,11 @@ defmodule Stcl1.Application do
   alias Stcl1.{Storage, Updates}
 
   def start(_type, _args) do
+    Storage.init()
+
     children = [
       Stcl1.Scheduler
     ]
-
-    Storage.init()
 
     Updates.start_long_polling()
 

@@ -34,7 +34,8 @@ defmodule Stcl1.MixProject do
       {:quantum, "~> 3.0"},
       {:memento, "~> 0.3.2"},
       {:secrex, "~> 0.3", runtime: false},
-      {:uuid, "~> 1.1"}
+      {:uuid, "~> 1.1"},
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end
