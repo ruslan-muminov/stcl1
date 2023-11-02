@@ -32,6 +32,20 @@ defmodule Stcl1.Updates do
 
   @q_back "В главное меню"
 
+  def child_spec(_arg) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []}
+    }
+  end
+
+  def start_link do
+    {
+      :ok,
+      start_long_polling()
+    }
+  end
+
   # Stcl1.Updates.start_long_polling()
   def start_long_polling do
     spawn_link(fn ->

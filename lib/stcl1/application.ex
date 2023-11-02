@@ -7,16 +7,15 @@ defmodule Stcl1.Application do
 
   use Application
 
-  alias Stcl1.{Storage, Updates}
+  alias Stcl1.{Scheduler, Storage, Updates}
 
   def start(_type, _args) do
     Storage.init()
 
     children = [
-      Stcl1.Scheduler
+      Scheduler,
+      Updates
     ]
-
-    Updates.start_long_polling()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
