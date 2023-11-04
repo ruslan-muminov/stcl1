@@ -56,15 +56,16 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   def send_answer(bot_token, chat_id_str, answer) do
-    chat_id = String.to_integer(chat_id_str)
-
-    case Storage.read_question(chat_id) do
-      {question_type, question, :wait, question_dt} ->
-        answer = compose_answer(question_type, question, answer)
-        send_to_customer(bot_token, chat_id, answer)
-        Storage.write_question(chat_id, {question_type, question, :done})
-        Storage.write_question_log(chat_id, question, question_dt, answer)
-        send_to_operator(bot_token, "Ты умничка!")
+    with {:ok, chat_id} <- try_string_to_integer(chat_id_str),
+         {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
+      answer = compose_answer(question_type, question, answer)
+      send_to_customer(bot_token, chat_id, answer)
+      Storage.write_question(chat_id, {question_type, question, :done})
+      Storage.write_question_log(chat_id, question, question_dt, answer)
+      send_to_operator(bot_token, "Ты умничка!")
+    else
+      {:error, :non_integer_string_to_integer} ->
+        send_to_operator(bot_token, "Кажется, неверный формат сообщения((")
       _ ->
         send_to_operator(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос")
     end
@@ -79,6 +80,16 @@ defmodule Stcl1.UpdatesOperator do
     Storage.write_user_state_ext(chat_id, :idle)
   end
 
+
+  defp try_string_to_integer(str) do
+    try do
+      {:ok, String.to_integer(str)}
+    rescue
+      _ ->
+        Logger.error("Attempt to convert non integer string to integer: #{str}")
+        {:error, :non_integer_string_to_integer}
+    end
+  end
 
   defp compose_users_regs(start_date_iso) do
     with {:ok, start_datetime, _} <- DateTime.from_iso8601(start_date_iso <> "T00:00:00Z"),
