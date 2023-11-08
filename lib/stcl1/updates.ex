@@ -291,7 +291,7 @@ defmodule Stcl1.Updates do
       end
 
     send_message(bot_token, chat_id, Messages.message(:operator_back))
-    UpdatesOperator.send_to_operator(bot_token, question)
+    UpdatesOperator.send_to_operator(bot_token, question, true)
     update_user_state(chat_id, :wait_for_answer)
   end
 

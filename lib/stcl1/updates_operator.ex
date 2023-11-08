@@ -1,6 +1,7 @@
 defmodule Stcl1.UpdatesOperator do
   require Logger
 
+  alias Stcl1.Settings
   alias Stcl1.Storage
   alias Stcl1.Storage.Question
 
@@ -14,17 +15,17 @@ defmodule Stcl1.UpdatesOperator do
       end
 
     message = compose_questions_list(questions)
-    send_to_operator(bot_token, message)
+    send_to_operator(bot_token, message, false)
   end
 
   def handle_message(bot_token, "/users_count") do
     users_count = Storage.users_ext_count()
-    send_to_operator(bot_token, "Количество пользователей бота: #{inspect users_count}")
+    send_to_operator(bot_token, "Количество пользователей бота: #{inspect users_count}", false)
   end
 
   def handle_message(bot_token, "/users_dates " <> start_date) do
     message = compose_users_regs(start_date)
-    send_to_operator(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}")
+    send_to_operator(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}", false)
   end
 
   # Stcl1.UpdatesOperator.handle_message("qwe", "/ads 2023-01-23T23:50:07 zdarova snup doc")
@@ -39,12 +40,12 @@ defmodule Stcl1.UpdatesOperator do
         _ -> "Неверный формат входных данных"
       end
 
-      send_to_operator(bot_token, message)
+      send_to_operator(bot_token, message, false)
   end
 
   def handle_message(bot_token, "/delete_ads " <> id_ads) do
     Storage.delete_ads(id_ads)
-    send_to_operator(bot_token, "Рекламное сообщение с id = #{id_ads} удалено")
+    send_to_operator(bot_token, "Рекламное сообщение с id = #{id_ads} удалено", false)
   end
 
   def handle_message(bot_token, text) do
@@ -62,17 +63,31 @@ defmodule Stcl1.UpdatesOperator do
       send_to_customer(bot_token, chat_id, answer)
       Storage.write_question(chat_id, {question_type, question, :done})
       Storage.write_question_log(chat_id, question, question_dt, answer)
-      send_to_operator(bot_token, "Ты умничка!")
+      send_to_operator(bot_token, "Ты умничка!", false)
     else
       {:error, :non_integer_string_to_integer} ->
-        send_to_operator(bot_token, "Кажется, неверный формат сообщения((")
+        send_to_operator(bot_token, "Кажется, неверный формат сообщения((", false)
       _ ->
-        send_to_operator(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос")
+        send_to_operator(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос", false)
     end
   end
 
-  def send_to_operator(bot_token, message) do
+  def send_to_operator(bot_token, message, is_from_user)
+
+  def send_to_operator(bot_token, message, false) do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: @operator_chat_id, text: message, parse_mode: "Markdown")
+  end
+
+  def send_to_operator(bot_token, message, true) do
+    curr_time = Time.utc_now()
+    acceptable_from_time = Settings.operator_time_from()
+    acceptable_to_time = Settings.operator_time_to()
+
+    if curr_time < acceptable_to_time and curr_time > acceptable_from_time do
+      Telegram.Api.request(bot_token, "sendMessage", chat_id: @operator_chat_id, text: message, parse_mode: "Markdown")
+    else
+      Storage.write_deferred_question(message)
+    end
   end
 
   def send_to_customer(bot_token, chat_id, message) do

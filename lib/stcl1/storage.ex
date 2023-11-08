@@ -17,6 +17,7 @@ defmodule Stcl1.Storage do
     Memento.Table.create(Storage.UserExt, disc_copies: nodes)
     Memento.Table.create(Storage.Question, disc_copies: nodes)
     Memento.Table.create(Storage.QuestionLog, disc_copies: nodes)
+    Memento.Table.create(Storage.DeferredQuestion, disc_copies: nodes)
     Memento.Table.create(Storage.ButtonLog, disc_copies: nodes)
     Memento.Table.create(Storage.Ads, disc_copies: nodes)
   end
@@ -141,6 +142,32 @@ defmodule Stcl1.Storage do
   def delete_user_ext(chat_id) do
     Memento.transaction! fn ->
       Memento.Query.delete(Storage.UserExt, chat_id)
+    end
+  end
+
+  ###### DeferredQuestion
+
+  def write_deferred_question(question) do
+    dt = DateTime.utc_now() |> DateTime.to_unix()
+
+    Memento.transaction! fn ->
+      Memento.Query.write(
+        %Storage.DeferredQuestion{question: question, dt: dt}
+      )
+    end
+  end
+
+  def all_deferred_questions do
+    Memento.transaction! fn ->
+      Storage.DeferredQuestion
+      |> Memento.Query.all()
+      |> Enum.sort(&(&1.dt <= &2.dt))
+    end
+  end
+
+  def delete_deferred_question(deferred_question) do
+    Memento.transaction! fn ->
+      Memento.Query.delete_record(Storage.DeferredQuestion, deferred_question)
     end
   end
 
