@@ -1,11 +1,11 @@
 defmodule Stcl1.Scheduler do
   use Quantum, otp_app: :stcl1
 
-  alias Stcl1.{Messages, Storage}
+  alias Stcl1.{Messages, Settings, Storage}
 
   def maybe_finish_conversation do
     current_dt = DateTime.utc_now() |> DateTime.to_unix()
-    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    bot_token = Settings.bot_token()
 
     users =
       Memento.transaction! fn ->
@@ -28,7 +28,7 @@ defmodule Stcl1.Scheduler do
   end
 
   def maybe_send_ads do
-    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    bot_token = Settings.bot_token()
     current_dt = DateTime.utc_now() |> DateTime.to_unix()
 
     ads_list =

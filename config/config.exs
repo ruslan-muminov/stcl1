@@ -18,6 +18,11 @@ config :stcl1, Stcl1.Scheduler,
     {"*/5 * * * *", {Stcl1.Scheduler, :maybe_send_ads, []}}
   ]
 
+#
+config :stcl1, :operator_acceptable_utc_time,
+  from: ~T[09:00:00],
+  to: ~T[19:00:00]
+
 config :secrex,
   # key_file: ".secret-key",
   files: ["config/secret.exs"]

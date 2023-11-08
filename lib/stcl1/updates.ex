@@ -1,7 +1,7 @@
 defmodule Stcl1.Updates do
   require Logger
 
-  alias Stcl1.{Messages, Pictures, Storage, UpdatesOperator}
+  alias Stcl1.{Messages, Pictures, Settings, Storage, UpdatesOperator}
 
   @operator_chat_id 891882667
 
@@ -49,7 +49,7 @@ defmodule Stcl1.Updates do
   # Stcl1.Updates.start_long_polling()
   def start_long_polling do
     spawn_link(fn ->
-      bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+      bot_token = Settings.bot_token()
       do_long_poll(bot_token)
     end)
   end
@@ -350,7 +350,7 @@ defmodule Stcl1.Updates do
   # Stcl1.Updates.test111()
   def test111 do
     chat_id = 70487131
-    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    bot_token = Settings.bot_token()
     # Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: "AgACAgIAAxkBAAIVFWRaauo4reNadx_gHXkvDeWWu7z5AAKPyTEbwCzQStkmfqvUEoDCAQADAgADcwADLwQ")
     send_album(bot_token, chat_id, Pictures.prepare_media(:group6))
   end
@@ -359,7 +359,7 @@ defmodule Stcl1.Updates do
   # Stcl1.Updates.test222("AgACAgIAAxkBAAMjZIM3m7GUPm_kBAQhX3yFKQiapFYAArrMMRv1ORhIxuA_5HIHUwoBAAMCAANzAAMvBA")
   def test222(photo) do
     chat_id = 70487131
-    bot_token = Application.get_env(:stcl1, :opts)[:bot_token]
+    bot_token = Settings.bot_token()
     Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: photo)
   end
 end
