@@ -1,7 +1,17 @@
 defmodule Stcl1.Scheduler do
   use Quantum, otp_app: :stcl1
 
-  alias Stcl1.{Messages, Settings, Storage}
+  alias Stcl1.{Messages, Settings, Storage, UpdatesOperator}
+
+  def send_deferred_questions do
+    bot_token = Settings.bot_token()
+    deferred_questions = Storage.all_deferred_questions()
+
+    Enum.each(deferred_questions, fn dq ->
+      UpdatesOperator.send_to_operator(bot_token, dq.question, true)
+      Storage.delete_deferred_question(dq)
+    end)
+  end
 
   def maybe_finish_conversation do
     current_dt = DateTime.utc_now() |> DateTime.to_unix()
