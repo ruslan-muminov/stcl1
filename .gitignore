@@ -35,6 +35,9 @@ npm-debug.log
 # secret config
 /config/secret.exs
 
+# secret_dev config
+/config/secret_dev.exs
+
 # mnesia
 /.mnesia/
 
