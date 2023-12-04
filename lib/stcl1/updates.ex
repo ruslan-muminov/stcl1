@@ -3,7 +3,7 @@ defmodule Stcl1.Updates do
 
   alias Stcl1.{Messages, Pictures, Settings, Storage, UpdatesOperator}
 
-  @operator_chat_id 891882667
+  @operator_chat_id Stcl1.Settings.operator_chat_id()
 
   @q_address "Какой адрес у Стендап Клуба?"
   @q_shows_list "Какие шоу идут в Стендап Клубе сегодня?"

@@ -4,10 +4,14 @@ defmodule Stcl1.Settings do
   end
 
   def operator_time_from do
-    Application.get_env(:stcl1, :operator_acceptable_utc_time)[:from]
+    Application.get_env(:stcl1, :operator)[:acceptable_utc_time][:from]
   end
 
   def operator_time_to do
-    Application.get_env(:stcl1, :operator_acceptable_utc_time)[:to]
+    Application.get_env(:stcl1, :operator)[:acceptable_utc_time][:to]
+  end
+
+  def operator_chat_id do
+    Application.get_env(:stcl1, :operator)[:chat_id]
   end
 end

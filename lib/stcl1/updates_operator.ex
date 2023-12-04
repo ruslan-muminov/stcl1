@@ -5,8 +5,6 @@ defmodule Stcl1.UpdatesOperator do
   alias Stcl1.Storage
   alias Stcl1.Storage.Question
 
-  @operator_chat_id 891882667
-
   def handle_message(bot_token, "/questions") do
     questions =
       Memento.transaction! fn ->
@@ -75,7 +73,7 @@ defmodule Stcl1.UpdatesOperator do
   def send_to_operator(bot_token, message, is_from_user)
 
   def send_to_operator(bot_token, message, false) do
-    Telegram.Api.request(bot_token, "sendMessage", chat_id: @operator_chat_id, text: message, parse_mode: "Markdown")
+    Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
   end
 
   def send_to_operator(bot_token, message, true) do
@@ -84,7 +82,7 @@ defmodule Stcl1.UpdatesOperator do
     acceptable_to_time = Settings.operator_time_to()
 
     if curr_time < acceptable_to_time and curr_time > acceptable_from_time do
-      Telegram.Api.request(bot_token, "sendMessage", chat_id: @operator_chat_id, text: message, parse_mode: "Markdown")
+      Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
     else
       Storage.write_deferred_question(message)
     end
