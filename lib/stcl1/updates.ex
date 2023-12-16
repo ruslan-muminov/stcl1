@@ -132,6 +132,10 @@ defmodule Stcl1.Updates do
     UpdatesOperator.handle_message(bot_token, text)
   end
 
+  defp handle_message(_bot_token, _chat_id, :banned, _text) do
+    :dopizdelsya
+  end
+
   defp handle_message(bot_token, chat_id, _user_state, "/start") do
     send_message(bot_token, chat_id, Messages.message(:first))
     reg_user(chat_id)

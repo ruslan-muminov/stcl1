@@ -5,6 +5,18 @@ defmodule Stcl1.UpdatesOperator do
   alias Stcl1.Storage
   alias Stcl1.Storage.Question
 
+  def handle_message(bot_token, "/ban " <> chat_id_str) do
+    {:ok, chat_id} = try_string_to_integer(chat_id_str)
+    Storage.write_user_state_ext(chat_id, :banned)
+    send_to_operator_from_bot(bot_token, "#{chat_id} забанен")
+  end
+
+  def handle_message(bot_token, "/unban " <> chat_id_str) do
+    {:ok, chat_id} = try_string_to_integer(chat_id_str)
+    Storage.write_user_state_ext(chat_id, :idle)
+    send_to_operator_from_bot(bot_token, "#{chat_id} разбанен")
+  end
+
   def handle_message(bot_token, "/questions") do
     questions =
       Memento.transaction! fn ->
