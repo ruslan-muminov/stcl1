@@ -1,5 +1,6 @@
 defmodule Stcl1.Storage do
 
+  alias Stcl1.Storage.Question
   alias Stcl1.Storage
 
   # Stcl1.Storage.init()
@@ -147,29 +148,29 @@ defmodule Stcl1.Storage do
 
   ###### DeferredQuestion
 
-  def write_deferred_question(question) do
-    dt = DateTime.utc_now() |> DateTime.to_unix()
+  # def write_deferred_question(question) do
+  #   dt = DateTime.utc_now() |> DateTime.to_unix()
 
-    Memento.transaction! fn ->
-      Memento.Query.write(
-        %Storage.DeferredQuestion{question: question, dt: dt}
-      )
-    end
-  end
+  #   Memento.transaction! fn ->
+  #     Memento.Query.write(
+  #       %Storage.DeferredQuestion{question: question, dt: dt}
+  #     )
+  #   end
+  # end
 
-  def all_deferred_questions do
-    Memento.transaction! fn ->
-      Storage.DeferredQuestion
-      |> Memento.Query.all()
-      |> Enum.sort(&(&1.dt <= &2.dt))
-    end
-  end
+  # def all_deferred_questions do
+  #   Memento.transaction! fn ->
+  #     Storage.DeferredQuestion
+  #     |> Memento.Query.all()
+  #     |> Enum.sort(&(&1.dt <= &2.dt))
+  #   end
+  # end
 
-  def delete_deferred_question(deferred_question) do
-    Memento.transaction! fn ->
-      Memento.Query.delete_record(Storage.DeferredQuestion, deferred_question)
-    end
-  end
+  # def delete_deferred_question(deferred_question) do
+  #   Memento.transaction! fn ->
+  #     Memento.Query.delete_record(deferred_question)
+  #   end
+  # end
 
   ###### Question
 
@@ -192,6 +193,12 @@ defmodule Stcl1.Storage do
     case question do
       nil -> nil
       _ -> {question.question_type, question.question, question.status, question.dt}
+    end
+  end
+
+  def deferred_questions do
+    Memento.transaction! fn ->
+      Memento.Query.select(Question, {:==, :status, :out_of_working_hours})
     end
   end
 
@@ -291,11 +298,11 @@ defmodule Stcl1.Storage do
     end
   end
 
-  # def users_ext_debug do
-  #   Memento.transaction! fn ->
-  #     Memento.Query.all(Storage.UserExt)
-  #   end
-  # end
+  def users_ext_debug do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.UserExt)
+    end
+  end
 
   def add_test_user do
     write_user(111, :finished)

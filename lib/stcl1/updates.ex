@@ -281,18 +281,10 @@ defmodule Stcl1.Updates do
     update_user_state(chat_id, :idle)
   end
 
+  # Custom message
   defp handle_message(bot_token, chat_id, user_state, text) do
-    question =
-      if user_state == :wait_who_big do
-        save_question(chat_id, text, :big_who)
-      else
-        Storage.write_question_log(chat_id, text, nil, nil)
-        save_question(chat_id, text, :other)
-      end
-
-    send_message(bot_token, chat_id, Messages.message(:operator_back))
-    UpdatesOperator.send_to_operator(bot_token, question, true)
-    update_user_state(chat_id, :wait_for_answer)
+    result = UpdatesOperator.send_to_operator_from_user(bot_token, chat_id, user_state, text)
+    send_message(bot_token, chat_id, Messages.message(result))
   end
 
   def send_message(bot_token, chat_id, message) do
@@ -331,12 +323,6 @@ defmodule Stcl1.Updates do
 
   defp send_album(bot_token, chat_id, media) do
     Telegram.Api.request(bot_token, "sendMediaGroup", chat_id: chat_id, media: media)
-  end
-
-  # Stcl1.Updates.save_question(70487131, "Здарова", :big_who)
-  defp save_question(chat_id, text, question_type) do
-    Storage.write_question(chat_id, {question_type, text, :wait})
-    UpdatesOperator.compose_question(question_type, text, chat_id)
   end
 
   defp reg_user(chat_id) do

@@ -5,11 +5,17 @@ defmodule Stcl1.Scheduler do
 
   def send_deferred_questions do
     bot_token = Settings.bot_token()
-    deferred_questions = Storage.all_deferred_questions()
+    deferred_questions = Storage.deferred_questions()
 
     Enum.each(deferred_questions, fn dq ->
-      UpdatesOperator.send_to_operator(bot_token, dq.question, true)
-      Storage.delete_deferred_question(dq)
+      user_state =
+        if dq.question_type == :big_who do
+          :wait_who_big
+        else
+          :wait_for_answer
+        end
+
+      UpdatesOperator.send_to_operator_from_user(bot_token, dq.chat_id, user_state, dq.question)
     end)
   end
 
