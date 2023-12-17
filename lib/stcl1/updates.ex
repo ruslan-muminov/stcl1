@@ -21,6 +21,11 @@ defmodule Stcl1.Updates do
   @q_show_advice_yes "Да"
   @q_show_advice_no "Нет"
 
+  @q_lineup "Составы..."
+  @q_lineup_big "BigStandUp"
+  @q_lineup_tough "Жесткий стендап"
+  @q_lineup_women "Женщины комики"
+
   @q_show_date "На какое шоу пойти с девушкой/парнем?"
   @q_who_big "Кто выступает на BigStandUp?"
   @q_where_schedule "Где можно посмотреть расписание и составы на ближайшие шоу?"
@@ -255,6 +260,36 @@ defmodule Stcl1.Updates do
     update_user_state(chat_id, :wait_who_big)
   end
 
+  ###################################################################
+  # Составы
+  #
+  defp handle_message(bot_token, chat_id, _user_state, @q_lineup) do
+    variants = [[@q_lineup_big], [@q_lineup_tough], [@q_lineup_women]]
+    message = Messages.message(:q_lineup)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :lineup)
+  end
+
+  defp handle_message(bot_token, chat_id, :lineup, @q_lineup_big) do
+    message = Storage.read_lineup_text(:big)
+    send_message(bot_token, chat_id, message)
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, :lineup, @q_lineup_tough) do
+    message = Storage.read_lineup_text(:tough)
+    send_message(bot_token, chat_id, message)
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, :lineup, @q_lineup_women) do
+    message = Storage.read_lineup_text(:women)
+    send_message(bot_token, chat_id, message)
+    update_user_state(chat_id, :idle)
+  end
+  #
+  ###################################################################
+
   defp handle_message(bot_token, chat_id, _user_state, @q_where_schedule) do
     send_message(bot_token, chat_id, Messages.message(:q_where_schedule))
     update_user_state(chat_id, :idle)
@@ -305,7 +340,7 @@ defmodule Stcl1.Updates do
 
   defp main_keyboard do
     [[@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
-     [@q_show_date], [@q_who_big], [@q_where_schedule], [@q_show_duration],
+     [@q_show_date], [@q_lineup], [@q_where_schedule], [@q_show_duration],
      [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
   end
 

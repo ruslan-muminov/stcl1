@@ -5,6 +5,21 @@ defmodule Stcl1.UpdatesOperator do
   alias Stcl1.Storage
   alias Stcl1.Storage.Question
 
+  def handle_message(bot_token, "/set_lineup_big " <> text) do
+    Storage.write_lineup(:big, text)
+    send_to_operator_from_bot(bot_token, "Состав на БИГ установлен")
+  end
+
+  def handle_message(bot_token, "/set_lineup_tough " <> text) do
+    Storage.write_lineup(:tough, text)
+    send_to_operator_from_bot(bot_token, "Состав на ЖЕСТКИЙ установлен")
+  end
+
+  def handle_message(bot_token, "/set_lineup_women " <> text) do
+    Storage.write_lineup(:women, text)
+    send_to_operator_from_bot(bot_token, "Состав на ЖЕНСКИЙ установлен")
+  end
+
   def handle_message(bot_token, "/ban " <> chat_id_str) do
     {:ok, chat_id} = try_string_to_integer(chat_id_str)
     Storage.write_user_state_ext(chat_id, :banned)

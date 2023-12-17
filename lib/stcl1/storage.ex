@@ -21,6 +21,7 @@ defmodule Stcl1.Storage do
     Memento.Table.create(Storage.DeferredQuestion, disc_copies: nodes)
     Memento.Table.create(Storage.ButtonLog, disc_copies: nodes)
     Memento.Table.create(Storage.Ads, disc_copies: nodes)
+    Memento.Table.create(Storage.Lineup, disc_copies: nodes)
   end
 
   ###### Option
@@ -146,32 +147,6 @@ defmodule Stcl1.Storage do
     end
   end
 
-  ###### DeferredQuestion
-
-  # def write_deferred_question(question) do
-  #   dt = DateTime.utc_now() |> DateTime.to_unix()
-
-  #   Memento.transaction! fn ->
-  #     Memento.Query.write(
-  #       %Storage.DeferredQuestion{question: question, dt: dt}
-  #     )
-  #   end
-  # end
-
-  # def all_deferred_questions do
-  #   Memento.transaction! fn ->
-  #     Storage.DeferredQuestion
-  #     |> Memento.Query.all()
-  #     |> Enum.sort(&(&1.dt <= &2.dt))
-  #   end
-  # end
-
-  # def delete_deferred_question(deferred_question) do
-  #   Memento.transaction! fn ->
-  #     Memento.Query.delete_record(deferred_question)
-  #   end
-  # end
-
   ###### Question
 
   def write_question(chat_id, {question_type, question, status}) do
@@ -245,7 +220,6 @@ defmodule Stcl1.Storage do
     id
   end
 
-  # Stcl1.Storage
   def update_ads_status(id, status) do
     Memento.transaction! fn ->
       case Memento.Query.read(Storage.Ads, id) do
@@ -267,6 +241,27 @@ defmodule Stcl1.Storage do
   def all_ads do
     Memento.transaction! fn ->
       Memento.Query.all(Storage.Ads)
+    end
+  end
+
+  ###### Lineup
+
+  def write_lineup(show_type, text) do
+    Memento.transaction! fn ->
+      Memento.Query.write(%Storage.Lineup{show_type: show_type, text: text})
+    end
+  end
+
+  def read_lineup_text(show_type) do
+    lineup =
+      Memento.transaction! fn ->
+        Memento.Query.read(Storage.Lineup, show_type)
+      end
+
+    if is_nil(lineup) do
+      "Составы скоро появятся"
+    else
+      lineup.text
     end
   end
 
