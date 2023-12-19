@@ -57,6 +57,7 @@ defmodule Stcl1.Scheduler do
       end
 
     sorted_ads_list = Enum.sort(ads_list, &(&1.send_dt <= &2.send_dt))
+
     do_send_ads(bot_token, sorted_ads_list)
   end
 
@@ -65,12 +66,14 @@ defmodule Stcl1.Scheduler do
     users = Storage.users_ext_all()
     Storage.update_ads_status(ads.id, :done)
 
-    Enum.map(users, fn user ->
-      Telegram.Api.request(
-        bot_token,
-        "sendMessage",
-        chat_id: user.chat_id, text: ads.text, parse_mode: "Markdown"
-      )
+    Enum.each(users, fn user ->
+      Task.start(fn ->
+        Telegram.Api.request(
+          bot_token,
+          "sendMessage",
+          chat_id: user.chat_id, text: ads.text, parse_mode: "Markdown"
+        )
+      end)
     end)
   end
 end
