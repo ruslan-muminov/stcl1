@@ -17,11 +17,12 @@ defmodule Stcl1.Updates do
   @q_show_advice_standup "Стендап"
   @q_show_advice_experiment "Комедийные эксперименты"
   @q_show_advice_panel "Пэнел шоу"
+  @q_show_new_jokes "Новые шутки"
   @q_show_advice_something_else "Хочу посмотреть что-то еще"
   @q_show_advice_yes "Да"
   @q_show_advice_no "Нет"
 
-  @q_lineup "Составы..."
+  @q_lineup "Актуальные составы на шоу"
   @q_lineup_big "BigStandUp"
   @q_lineup_tough "Жесткий стендап"
   @q_lineup_women "Женщины комики"
@@ -190,7 +191,8 @@ defmodule Stcl1.Updates do
   # Анкета: на какое шоу пойти
   #
   defp handle_message(bot_token, chat_id, _user_state, @q_show_advice) do
-    variants = [[@q_show_advice_standup], [@q_show_advice_experiment], [@q_show_advice_panel], [@q_back]]
+    variants = [[@q_show_advice_standup], [@q_show_advice_experiment],
+                [@q_show_advice_panel], [@q_show_new_jokes], [@q_back]]
     message = Messages.message(:q_show_advice1)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
@@ -216,6 +218,14 @@ defmodule Stcl1.Updates do
     send_album(bot_token, chat_id, Pictures.prepare_media(:group3))
     variants = [[@q_show_advice_something_else], [@q_back]]
     message = Messages.message(:q_show_advice_panel)
+    send_variants(bot_token, chat_id, variants, message)
+    update_user_state(chat_id, :advice)
+  end
+
+  defp handle_message(bot_token, chat_id, :advice, @q_show_new_jokes) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group6))
+    variants = [[@q_show_advice_something_else], [@q_back]]
+    message = Messages.message(:q_show_new_jokes)
     send_variants(bot_token, chat_id, variants, message)
     update_user_state(chat_id, :advice)
   end
@@ -246,7 +256,7 @@ defmodule Stcl1.Updates do
   ###################################################################
 
   defp handle_message(bot_token, chat_id, _user_state, @q_show_date) do
-    send_album(bot_token, chat_id, Pictures.prepare_media(:group6))
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group7))
     send_message(bot_token, chat_id, Messages.message(:q_show_date))
     update_user_state(chat_id, :idle)
   end
@@ -339,8 +349,8 @@ defmodule Stcl1.Updates do
   end
 
   defp main_keyboard do
-    [[@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
-     [@q_show_date], [@q_lineup], [@q_where_schedule], [@q_show_duration],
+    [[@q_lineup], [@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
+     [@q_show_date], [@q_where_schedule], [@q_show_duration],
      [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
   end
 
