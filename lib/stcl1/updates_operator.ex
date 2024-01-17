@@ -48,9 +48,15 @@ defmodule Stcl1.UpdatesOperator do
     send_to_operator_from_bot(bot_token, "Количество пользователей бота: #{inspect users_count}")
   end
 
+  # Stcl1.UpdatesOperator.handle_message("6115660671:AAH-TlDsnfBBmdagZT2LMMkzPAl6XqIpJbM", "/users_dates 2024-01-01")
   def handle_message(bot_token, "/users_dates " <> start_date) do
     message = compose_users_regs(start_date)
     send_to_operator_from_bot(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}")
+  end
+
+  def handle_message(bot_token, "/subs_by_date " <> date) do
+    message = compose_users_subs_by_date(date)
+    send_to_operator_from_bot(bot_token, message)
   end
 
   # Stcl1.UpdatesOperator.handle_message("qwe", "/ads 2023-01-23T23:50:07 zdarova snup doc")
@@ -162,6 +168,18 @@ defmodule Stcl1.UpdatesOperator do
       end)
       |> Enum.sort()
       |> Enum.join("\n")
+    else
+      {:error, _} ->
+        "Неверный формат даты"
+    end
+  end
+
+  defp compose_users_subs_by_date(date_iso) do
+    with {:ok, datetime, _} <- DateTime.from_iso8601(date_iso <> "T00:00:00Z"),
+         unix_from <- DateTime.to_unix(datetime),
+         unix_to <- unix_from + 3600 * 24 do
+      subs = Storage.users_ext_subs(unix_from, unix_to)
+      "Количество регистраций за #{date_iso}: #{subs}"
     else
       {:error, _} ->
         "Неверный формат даты"

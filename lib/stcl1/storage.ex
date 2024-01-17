@@ -128,6 +128,15 @@ defmodule Stcl1.Storage do
     end
   end
 
+  def users_ext_subs(unix_from, unix_to) do
+    users =
+      Memento.transaction! fn ->
+        Memento.Query.select(Storage.UserExt, [{:>, :dt_reg, unix_from}, {:<, :dt_reg, unix_to}])
+      end
+
+    length(users)
+  end
+
   def migrate_users do
     users =
       Memento.transaction! fn ->
