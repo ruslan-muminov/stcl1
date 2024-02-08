@@ -5,13 +5,13 @@ defmodule Stcl1.Updates do
 
   @operator_chat_id Stcl1.Settings.operator_chat_id()
 
+  @q_lineup "Актуальные составы на шоу"
+  @q_lineup_big "BigStandUp"
+  @q_lineup_tough "Жесткий стендап"
+  @q_lineup_women "Женщины комики"
+
   @q_address "Какой адрес у Стендап Клуба?"
   @q_shows_list "Какие шоу идут в Стендап Клубе сегодня?"
-
-  @q_tickets "Покупка и возврат билетов"
-  @q_buy_ticket_on_event "Хочу купить билеты на месте. Это возможно?"
-  @q_unrecieved_ticket "Приобрел билет, но мне он не пришел. Что делать?"
-  @q_return_ticket "Хочу вернуть билет. Как это сделать?"
 
   @q_show_advice "Посоветуйте, на какое шоу сходить"
   @q_show_advice_standup "Стендап"
@@ -22,14 +22,17 @@ defmodule Stcl1.Updates do
   @q_show_advice_yes "Да"
   @q_show_advice_no "Нет"
 
-  @q_lineup "Актуальные составы на шоу"
-  @q_lineup_big "BigStandUp"
-  @q_lineup_tough "Жесткий стендап"
-  @q_lineup_women "Женщины комики"
-
   @q_show_date "На какое шоу пойти с девушкой/парнем?"
-  @q_who_big "Кто выступает на BigStandUp?"
-  @q_where_schedule "Где можно посмотреть расписание и составы на ближайшие шоу?"
+
+  @q_tickets "Покупка и возврат билетов"
+  @q_buy_ticket_on_event "Хочу купить билеты на месте. Это возможно?"
+  @q_unrecieved_ticket "Приобрел билет, но мне он не пришел. Что делать?"
+  @q_return_ticket "Хочу вернуть билет. Как это сделать?"
+
+  @q_loyalty_card "Карта лояльности"
+  @q_gift_cert "Подарочный сертификат"
+  @q_our_soc_networks "Наши социальные сети"
+
   @q_show_duration "Сколько длится шоу?"
   @q_order_food_drink "Хочу заказать еду и напитки. Могу ли я это сделать?"
   @q_show_passport "Обязательно ли показывать паспорт?"
@@ -37,6 +40,10 @@ defmodule Stcl1.Updates do
   @q_parking "Есть ли у вас парковка?"
 
   @q_back "В главное меню"
+
+  # Прокаженные
+  @q_who_big "Кто выступает на BigStandUp?"
+  @q_where_schedule "Где можно посмотреть расписание и составы на ближайшие шоу?"
 
   def child_spec(_arg) do
     %{
@@ -330,6 +337,21 @@ defmodule Stcl1.Updates do
     update_user_state(chat_id, :idle)
   end
 
+  defp handle_message(bot_token, chat_id, _user_state, @q_loyalty_card) do
+    send_message(bot_token, chat_id, Messages.message(:q_loyalty_card))
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, _user_state, @q_our_soc_networks) do
+    send_message(bot_token, chat_id, Messages.message(:q_our_soc_networks))
+    update_user_state(chat_id, :idle)
+  end
+
+  defp handle_message(bot_token, chat_id, _user_state, @q_gift_cert) do
+    send_message(bot_token, chat_id, Messages.message(:q_gift_cert))
+    update_user_state(chat_id, :idle)
+  end
+
   # Custom message
   defp handle_message(bot_token, chat_id, user_state, text) do
     result = UpdatesOperator.send_to_operator_from_user(bot_token, chat_id, user_state, text)
@@ -349,8 +371,8 @@ defmodule Stcl1.Updates do
   end
 
   defp main_keyboard do
-    [[@q_lineup], [@q_address], [@q_shows_list], [@q_tickets], [@q_show_advice],
-     [@q_show_date], [@q_where_schedule], [@q_show_duration],
+    [[@q_lineup], [@q_address], [@q_shows_list], [@q_show_advice], [@q_show_date], [@q_tickets],
+     [@q_loyalty_card], [@q_gift_cert], [@q_our_soc_networks], [@q_show_duration],
      [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
   end
 

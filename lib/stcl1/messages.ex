@@ -50,6 +50,21 @@ defmodule Stcl1.Messages do
   def message(:q_parking),
     do: "Да! Общегородская."
 
+  def message(:q_loyalty_card),
+    do: "Карта лояльности Стендап клуба на Трубной -  это скидки на покупку билетов на все шоу клуба.
+Первоначальная скидка по карте лояльности- 5 процентов.
+Установить карту лояльности можно по ссылке в каждом купленном билете от intickets или через [форму](https://form.p-h.app/a433dab319b166013a1ab70ba6ac2916)"
+
+  def message(:q_our_soc_networks),
+    do: "Сайт: https://standupclub.ru/
+Телеграм-канал: https://t.me/Standupclubru
+Вконтакте: https://vk.com/standupclubru
+You-tube: https://www.youtube.com/@standupclubru"
+
+  def message(:q_gift_cert),
+    do: "Сертификат действителен только на покупку билета на шоу Стендап клуба на Трубной.
+Приобрести подарочный сертификат номиналами 1500, 3000 или 5000 можно по [ссылке](https://clck.ru/38UW2m)"
+
   def message(:operator_back),
     do: "Спасибо за вопрос! Сейчас позову живого человека — он ответит!"
 
