@@ -296,6 +296,13 @@ defmodule Stcl1.Storage do
     Memento.Table.create(Storage.User, disc_copies: nodes)
   end
 
+  # Stcl1.Storage.button_log_debug()
+  def button_log_debug do
+    Memento.transaction! fn ->
+      Memento.Query.all(Storage.ButtonLog)
+    end
+  end
+
   def users_debug do
     Memento.transaction! fn ->
       Memento.Query.all(Storage.User)
