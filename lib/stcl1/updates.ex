@@ -10,7 +10,6 @@ defmodule Stcl1.Updates do
   @q_lineup_tough "Жесткий стендап"
   @q_lineup_women "Женщины комики"
 
-  @q_address "Какой адрес у Стендап Клуба?"
   @q_shows_list "Какие шоу идут в Стендап Клубе сегодня?"
 
   @q_show_advice "Посоветуйте, на какое шоу сходить"
@@ -37,6 +36,7 @@ defmodule Stcl1.Updates do
   @q_order_food_drink "Хочу заказать еду и напитки. Могу ли я это сделать?"
   @q_show_passport "Обязательно ли показывать паспорт?"
   @q_child_with_batya "Можно ли несовершеннолетнему с родителями?"
+  @q_address "Какой адрес у Стендап Клуба?"
   @q_parking "Есть ли у вас парковка?"
 
   @q_back "В главное меню"
@@ -372,9 +372,9 @@ defmodule Stcl1.Updates do
   end
 
   defp main_keyboard do
-    [[@q_lineup], [@q_address], [@q_shows_list], [@q_show_advice], [@q_show_date], [@q_tickets],
+    [[@q_lineup], [@q_shows_list], [@q_show_advice], [@q_show_date], [@q_tickets],
      [@q_loyalty_card], [@q_gift_cert], [@q_our_soc_networks], [@q_show_duration],
-     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_parking]]
+     [@q_order_food_drink], [@q_show_passport], [@q_child_with_batya], [@q_address], [@q_parking]]
   end
 
   defp send_tickets_menu(bot_token, chat_id) do
