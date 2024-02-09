@@ -348,6 +348,7 @@ defmodule Stcl1.Updates do
   end
 
   defp handle_message(bot_token, chat_id, _user_state, @q_gift_cert) do
+    send_album(bot_token, chat_id, Pictures.prepare_media(:group8))
     send_message(bot_token, chat_id, Messages.message(:q_gift_cert))
     update_user_state(chat_id, :idle)
   end
