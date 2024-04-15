@@ -378,7 +378,7 @@ defmodule Stcl1.Updates do
   end
 
   defp send_tickets_menu(bot_token, chat_id) do
-    message = @q_tickets
+    message = Messages.message(:q_tickets_menu)
     keyboard = tickets_keyboard()
     keyboard_markup = %{one_time_keyboard: false, resize_keyboard: true, keyboard: keyboard}
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, reply_markup: {:json, keyboard_markup})
@@ -419,5 +419,18 @@ defmodule Stcl1.Updates do
     chat_id = 70487131
     bot_token = Settings.bot_token()
     Telegram.Api.request(bot_token, "sendPhoto", chat_id: chat_id, caption: "qweqeqwewqeqwe", parse_mode: "Markdown", photo: photo)
+  end
+
+  def test333 do
+    chat_id = 70487131
+    bot_token = Settings.bot_token()
+    Telegram.Api.request(bot_token, "setChatMenuButton", chat_id: chat_id, menu_button: {:json, %{type: "commands"}})
+  end
+
+  def test444 do
+    chat_id = 70487131
+    bot_token = Settings.bot_token()
+    menu_button = {:json, %{type: "web_app", text: "Билеты", web_app: %{url: "https://iframeab-pre3886.intickets.ru/events/"}}}
+    Telegram.Api.request(bot_token, "setChatMenuButton", chat_id: chat_id, menu_button: menu_button)
   end
 end

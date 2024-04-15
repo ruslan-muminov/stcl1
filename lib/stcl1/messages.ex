@@ -15,6 +15,9 @@ defmodule Stcl1.Messages do
   def message(:q_shows_list),
     do: "Наше расписание можно посмотреть на [сайте](https://standupclub.ru) или в [социальных сетях](https://t.me/Standupclubru)."
 
+  def message(:q_tickets_menu),
+    do: "Покупка и возврат билетов.\nВыбери нужный вопрос из списка"
+
   def message(:q_buy_ticket_on_event),
     do: "Нет, билеты можно приобрести только онлайн на нашем [сайте](https://standupclub.ru) или у других кассовых операторов."
 
