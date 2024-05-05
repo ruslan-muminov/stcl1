@@ -13,6 +13,7 @@ defmodule Stcl1.Application do
     Storage.init()
 
     children = [
+      Stcl1.Repo,
       Scheduler,
       Updates
     ]

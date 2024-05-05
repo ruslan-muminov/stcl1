@@ -1,5 +1,13 @@
 import Config
 
+config :stcl1, ecto_repos: [Stcl1.Repo]
+
+config :stcl1, Stcl1.Repo,
+  database: "stcl1_repo",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost"
+
 config :logger,
   backends: [:console, {LoggerFileBackend, :error_log}]
 
