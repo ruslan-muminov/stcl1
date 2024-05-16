@@ -3,7 +3,13 @@ defmodule Stcl1.UpdatesOperator do
 
   alias Stcl1.Settings
   alias Stcl1.Storage
+  alias Stcl1.Storage.Interfaces.Users
   alias Stcl1.Storage.Question
+
+  def handle_message(text) do
+    bot_token = Settings.bot_token()
+    handle_message(bot_token, text)
+  end
 
   def handle_message(bot_token, "/set_lineup_big " <> text) do
     Storage.write_lineup(:big, text)
@@ -20,15 +26,13 @@ defmodule Stcl1.UpdatesOperator do
     send_to_operator_from_bot(bot_token, "Состав на ЖЕНСКИЙ установлен")
   end
 
-  def handle_message(bot_token, "/ban " <> chat_id_str) do
-    {:ok, chat_id} = try_string_to_integer(chat_id_str)
-    Storage.write_user_state_ext(chat_id, :banned)
+  def handle_message(bot_token, "/ban " <> chat_id) do
+    Users.upsert(%{chat_id: chat_id, state: "banned"})
     send_to_operator_from_bot(bot_token, "#{chat_id} забанен")
   end
 
-  def handle_message(bot_token, "/unban " <> chat_id_str) do
-    {:ok, chat_id} = try_string_to_integer(chat_id_str)
-    Storage.write_user_state_ext(chat_id, :idle)
+  def handle_message(bot_token, "/unban " <> chat_id) do
+    Users.upsert(%{chat_id: chat_id, state: "idle"})
     send_to_operator_from_bot(bot_token, "#{chat_id} разбанен")
   end
 
@@ -44,7 +48,7 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   def handle_message(bot_token, "/users_count") do
-    users_count = Storage.users_ext_count()
+    users_count = Users.count()
     send_to_operator_from_bot(bot_token, "Количество пользователей бота: #{inspect users_count}")
   end
 
@@ -82,7 +86,7 @@ defmodule Stcl1.UpdatesOperator do
   def handle_message(bot_token, text) do
     case String.split(text, ["/", " "], parts: 3) do
       ["", _] -> :hueta
-      ["", chat_id_str, answer] -> send_answer(bot_token, chat_id_str, answer)
+      ["", chat_id, answer] -> send_answer(bot_token, chat_id, answer)
       _ -> :hueta
     end
   end
@@ -90,7 +94,7 @@ defmodule Stcl1.UpdatesOperator do
   def send_answer(bot_token, chat_id_str, answer) do
     with {:ok, chat_id} <- try_string_to_integer(chat_id_str),
          {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
-      answer = compose_answer(question_type, question, answer)
+      answer = compose_answer(question, answer)
       send_to_customer(bot_token, chat_id, answer)
       Storage.write_question(chat_id, {question_type, question, :done})
       Storage.write_question_log(chat_id, question, question_dt, answer)
@@ -107,26 +111,19 @@ defmodule Stcl1.UpdatesOperator do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
   end
 
-  def send_to_operator_from_user(bot_token, chat_id, user_state, text) do
+  def send_to_operator_from_user(bot_token, chat_id, text) do
     curr_time = Time.utc_now()
     acceptable_from_time = Settings.operator_time_from()
     acceptable_to_time = Settings.operator_time_to()
 
-    question_type =
-      if user_state == :wait_who_big do
-        :big_who
-      else
-        :other
-      end
+    # рудимент
+    question_type = :other
 
     if curr_time < acceptable_to_time and curr_time > acceptable_from_time do
-      if question_type == :other do
-        Storage.write_question_log(chat_id, text, nil, nil)
-      end
-
+      Storage.write_question_log(chat_id, text, nil, nil)
       Storage.write_question(chat_id, {question_type, text, :wait})
-      Storage.write_user_state_ext(chat_id, user_state)
-      message = compose_question(question_type, text, chat_id)
+      Users.upsert(%{chat_id: chat_id, in_conversation_with_operator: true})
+      message = compose_question(text, chat_id)
       Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
       :operator_back
     else
@@ -137,7 +134,7 @@ defmodule Stcl1.UpdatesOperator do
 
   def send_to_customer(bot_token, chat_id, message) do
     Telegram.Api.request(bot_token, "sendMessage", chat_id: chat_id, text: message, parse_mode: "Markdown")
-    Storage.write_user_state_ext(chat_id, :idle)
+    Users.upsert(%{chat_id: chat_id, in_conversation_with_operator: false})
   end
 
 
@@ -152,33 +149,26 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   defp compose_users_regs(start_date_iso) do
-    with {:ok, start_datetime, _} <- DateTime.from_iso8601(start_date_iso <> "T00:00:00Z"),
-         start_unix <- DateTime.to_unix(start_datetime) do
-      users_ext = Storage.users_ext_all()
-
-      users_ext
-      |> Enum.flat_map(fn user_ext ->
-        if user_ext.dt_reg > start_unix do
-          {:ok, datetime_reg} = DateTime.from_unix(user_ext.dt_reg)
-          date_reg_iso = datetime_reg |> DateTime.to_date() |> Date.to_iso8601()
-          [date_reg_iso]
-        else
-          []
-        end
-      end)
-      |> Enum.sort()
-      |> Enum.join("\n")
-    else
-      {:error, _} ->
+    case NaiveDateTime.from_iso8601(start_date_iso <> "T00:00:00Z") do
+      {:ok, start_naive_datetime} ->
+        start_naive_datetime
+        |> Users.select_from_date()
+        |> Enum.map(fn %{inserted_at: inserted_at} ->
+          inserted_at |> NaiveDateTime.to_date() |> Date.to_iso8601()
+        end)
+        |> Enum.join("\n")
+      {:error, _error} ->
         "Неверный формат даты"
     end
   end
 
   defp compose_users_subs_by_date(date_iso) do
-    with {:ok, datetime, _} <- DateTime.from_iso8601(date_iso <> "T00:00:00Z"),
-         unix_from <- DateTime.to_unix(datetime),
-         unix_to <- unix_from + 3600 * 24 do
-      subs = Storage.users_ext_subs(unix_from, unix_to)
+    with {:ok, naive_datetime_from} <- NaiveDateTime.from_iso8601(date_iso <> "T00:00:00Z"),
+         naive_datetime_to <- NaiveDateTime.add(naive_datetime_from, 3600 * 24) do
+      subs =
+        naive_datetime_from
+        |> Users.select_between_dates(naive_datetime_to)
+        |> length()
       "Количество регистраций за #{date_iso}: #{subs}"
     else
       {:error, _} ->
@@ -190,20 +180,20 @@ defmodule Stcl1.UpdatesOperator do
   defp compose_questions_list(questions) do
     questions
     |> Enum.map(fn question ->
-      compose_question(question.question_type, question.question, question.chat_id)
+      compose_question(question.question, question.chat_id)
     end)
     |> Enum.join("\n\n")
   end
 
-  def compose_question(:big_who, question, chat_id),
-    do: "/#{chat_id} Какое шоу интересует (Big): #{question}"
+  # def compose_question(:big_who, question, chat_id),
+  #   do: "/#{chat_id} Какое шоу интересует (Big): #{question}"
 
-  def compose_question(_, question, chat_id),
+  defp compose_question(question, chat_id),
     do: "/#{chat_id} #{question}"
 
-  defp compose_answer(:big_who, question, answer),
-    do: "_Какое шоу интересует? (#{question})_\n\n#{answer}"
+  # defp compose_answer(:big_who, question, answer),
+  #   do: "_Какое шоу интересует? (#{question})_\n\n#{answer}"
 
-  defp compose_answer(_, question, answer),
+  defp compose_answer(question, answer),
     do: "_#{question}_\n\n#{answer}"
 end

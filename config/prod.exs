@@ -11,7 +11,7 @@ config :stcl1, Stcl1.Scheduler,
   ]
 
 config :stcl1, :operator,
-  chat_id: 891882667,
+  chat_id: "891882667",
   acceptable_utc_time: [from: ~T[09:00:00], to: ~T[19:00:00]]
 
 config :secrex,

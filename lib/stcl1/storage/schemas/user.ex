@@ -5,9 +5,8 @@ defmodule Stcl1.Storage.Schemas.User do
 
   @type t() :: %__MODULE__{}
 
-  @primary_key false
+  @primary_key {:chat_id, :string, []}
   schema "users" do
-    field(:chat_id, :string)
     field(:state, :string, default: "idle")
     field(:in_conversation_with_operator, :boolean, default: false)
 
@@ -19,7 +18,8 @@ defmodule Stcl1.Storage.Schemas.User do
     |> cast(attrs, [
       :chat_id,
       :state,
-      :in_conversation_with_operator
+      :in_conversation_with_operator,
+      :inserted_at
     ])
     |> unique_constraint(:chat_id, name: :users_chat_id_index)
   end
