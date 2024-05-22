@@ -1,8 +1,8 @@
 defmodule Stcl1.Storage.Interfaces.Users do
   import Ecto.Query, except: [update: 2]
 
-  alias Stcl1.Storage.Schemas.User
   alias Stcl1.Repo
+  alias Stcl1.Storage.Schemas.User
 
   def get(chat_id) when is_binary(chat_id) do
     Repo.get(User, chat_id)

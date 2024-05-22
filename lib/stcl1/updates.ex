@@ -1,6 +1,7 @@
 defmodule Stcl1.Updates do
   require Logger
 
+  alias Stcl1.ChatMenuButton
   alias Stcl1.Message.Handler
   alias Stcl1.Settings
   alias Stcl1.Storage
@@ -72,6 +73,7 @@ defmodule Stcl1.Updates do
         case Users.get(chat_id) do
           nil ->
             Users.upsert(%{chat_id: chat_id}, [:state, :in_conversation_with_operator, :updated_at])
+            ChatMenuButton.set(chat_id)
           user ->
             user
         end
