@@ -51,4 +51,12 @@ defmodule Stcl1.Storage.Interfaces.Users do
     |> order_by(^order_direction)
     |> Repo.all()
   end
+
+  def select_finished do
+    dt = NaiveDateTime.add(NaiveDateTime.utc_now(), - 10 * 60)
+
+    User
+    |> where([u], u.updated_at < ^dt and u.state == "idle" and not u.in_conversation_with_operator)
+    |> Repo.all()
+  end
 end

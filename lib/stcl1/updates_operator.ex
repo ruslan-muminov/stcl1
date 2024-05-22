@@ -185,14 +185,9 @@ defmodule Stcl1.UpdatesOperator do
     |> Enum.join("\n\n")
   end
 
-  # def compose_question(:big_who, question, chat_id),
-  #   do: "/#{chat_id} Какое шоу интересует (Big): #{question}"
-
   defp compose_question(question, chat_id),
     do: "/#{chat_id} #{question}"
 
-  # defp compose_answer(:big_who, question, answer),
-  #   do: "_Какое шоу интересует? (#{question})_\n\n#{answer}"
 
   defp compose_answer(question, answer),
     do: "_#{question}_\n\n#{answer}"

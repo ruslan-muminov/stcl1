@@ -1,7 +1,6 @@
 defmodule Stcl1.Updates do
   require Logger
 
-  # alias Stcl1.{Messages, Pictures, Settings, Storage, UpdatesOperator}
   alias Stcl1.Message.Handler
   alias Stcl1.Settings
   alias Stcl1.Storage

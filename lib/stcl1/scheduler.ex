@@ -1,7 +1,11 @@
 defmodule Stcl1.Scheduler do
   use Quantum, otp_app: :stcl1
 
-  alias Stcl1.{Messages, Settings, Storage, UpdatesOperator}
+  alias Stcl1.Message.Text
+  alias Stcl1.Settings
+  alias Stcl1.Storage
+  alias Stcl1.Storage.Interfaces.Users
+  alias Stcl1.UpdatesOperator
 
   def send_deferred_questions do
     bot_token = Settings.bot_token()
@@ -13,26 +17,18 @@ defmodule Stcl1.Scheduler do
   end
 
   def maybe_finish_conversation do
-    current_dt = DateTime.utc_now() |> DateTime.to_unix()
     bot_token = Settings.bot_token()
 
-    users =
-      Memento.transaction! fn ->
-        guards = [
-          {:<, :dt, current_dt - 10 * 60},
-          {:==, :state, :idle}
-        ]
-        Memento.Query.select(Storage.UserExt, guards)
-      end
+    users = Users.select_finished()
 
     Enum.map(users, fn user ->
       Telegram.Api.request(
         bot_token,
         "sendMessage",
-        chat_id: user.chat_id, text: Messages.message(:finish), parse_mode: "Markdown"
+        chat_id: user.chat_id, text: Text.text(:finish), parse_mode: "Markdown"
       )
 
-      Storage.write_user_state_ext(user.chat_id, :finished)
+      Users.update_state(user, "finish")
     end)
   end
 
