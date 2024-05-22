@@ -15,7 +15,7 @@ defmodule Stcl1.Application do
     children = [
       Stcl1.Repo,
       Scheduler,
-      Updates
+      # Updates
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
