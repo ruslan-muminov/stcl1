@@ -91,17 +91,14 @@ defmodule Stcl1.UpdatesOperator do
     end
   end
 
-  def send_answer(bot_token, chat_id_str, answer) do
-    with {:ok, chat_id} <- try_string_to_integer(chat_id_str),
-         {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
+  def send_answer(bot_token, chat_id, answer) do
+    with {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
       answer = compose_answer(question, answer)
       send_to_customer(bot_token, chat_id, answer)
       Storage.write_question(chat_id, {question_type, question, :done})
       Storage.write_question_log(chat_id, question, question_dt, answer)
       send_to_operator_from_bot(bot_token, "Ты умничка!")
     else
-      {:error, :non_integer_string_to_integer} ->
-        send_to_operator_from_bot(bot_token, "Кажется, неверный формат сообщения((")
       _ ->
         send_to_operator_from_bot(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос")
     end
@@ -137,16 +134,6 @@ defmodule Stcl1.UpdatesOperator do
     Users.upsert(%{chat_id: chat_id, in_conversation_with_operator: false})
   end
 
-
-  defp try_string_to_integer(str) do
-    try do
-      {:ok, String.to_integer(str)}
-    rescue
-      _ ->
-        Logger.error("Attempt to convert non integer string to integer: #{str}")
-        {:error, :non_integer_string_to_integer}
-    end
-  end
 
   defp compose_users_regs(start_date_iso) do
     case NaiveDateTime.from_iso8601(start_date_iso <> "T00:00:00Z") do

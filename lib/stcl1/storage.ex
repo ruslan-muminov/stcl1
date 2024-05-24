@@ -176,16 +176,9 @@ defmodule Stcl1.Storage do
 
     case question do
       nil ->
-        # Ебаный костыль!!! Переехать в ПОСТГРЮ!!!
-        q =
-          Memento.transaction! fn ->
-            Memento.Query.read(Storage.Question, inspect(chat_id))
-          end
-        case q do
-          nil -> nil
-          _ -> {q.question_type, q.question, q.status, q.dt}
-        end
-      _ -> {question.question_type, question.question, question.status, question.dt}
+        nil
+      _ ->
+        {question.question_type, question.question, question.status, question.dt}
     end
   end
 
