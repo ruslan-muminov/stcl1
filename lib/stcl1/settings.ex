@@ -14,4 +14,8 @@ defmodule Stcl1.Settings do
   def operator_chat_id do
     Application.get_env(:stcl1, :operator)[:chat_id]
   end
+
+  def operators do
+    Application.get_env(:stcl1, :operators)
+  end
 end

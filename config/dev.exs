@@ -7,6 +7,9 @@ config :stcl1, :operator,
   chat_id: "6829333403",
   acceptable_utc_time: [from: ~T[09:00:00], to: ~T[19:00:00]]
 
+config :stcl1,
+  operators: ["6829333403"]
+
 config :secrex,
   # key_file: ".secret-key",
   files: ["config/secret_dev.exs"]

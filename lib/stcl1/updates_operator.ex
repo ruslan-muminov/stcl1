@@ -6,37 +6,37 @@ defmodule Stcl1.UpdatesOperator do
   alias Stcl1.Storage.Interfaces.Users
   alias Stcl1.Storage.Question
 
-  def handle_message(text) do
+  def handle_message(text, operator_chat_id) do
     bot_token = Settings.bot_token()
-    handle_message(bot_token, text)
+    handle_message(bot_token, operator_chat_id, text)
   end
 
-  def handle_message(bot_token, "/set_lineup_big " <> text) do
+  def handle_message(bot_token, operator_chat_id, "/set_lineup_big " <> text) do
     Storage.write_lineup(:big, text)
-    send_to_operator_from_bot(bot_token, "Состав на БИГ установлен")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Состав на БИГ установлен")
   end
 
-  def handle_message(bot_token, "/set_lineup_tough " <> text) do
+  def handle_message(bot_token, operator_chat_id, "/set_lineup_tough " <> text) do
     Storage.write_lineup(:tough, text)
-    send_to_operator_from_bot(bot_token, "Состав на ЖЕСТКИЙ установлен")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Состав на ЖЕСТКИЙ установлен")
   end
 
-  def handle_message(bot_token, "/set_lineup_women " <> text) do
+  def handle_message(bot_token, operator_chat_id, "/set_lineup_women " <> text) do
     Storage.write_lineup(:women, text)
-    send_to_operator_from_bot(bot_token, "Состав на ЖЕНСКИЙ установлен")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Состав на ЖЕНСКИЙ установлен")
   end
 
-  def handle_message(bot_token, "/ban " <> chat_id) do
+  def handle_message(bot_token, operator_chat_id, "/ban " <> chat_id) do
     Users.upsert(%{chat_id: chat_id, state: "banned"})
-    send_to_operator_from_bot(bot_token, "#{chat_id} забанен")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "#{chat_id} забанен")
   end
 
-  def handle_message(bot_token, "/unban " <> chat_id) do
+  def handle_message(bot_token, operator_chat_id, "/unban " <> chat_id) do
     Users.upsert(%{chat_id: chat_id, state: "idle"})
-    send_to_operator_from_bot(bot_token, "#{chat_id} разбанен")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "#{chat_id} разбанен")
   end
 
-  def handle_message(bot_token, "/questions") do
+  def handle_message(bot_token, operator_chat_id, "/questions") do
     questions =
       Memento.transaction! fn ->
         Memento.Query.select(Question, {:==, :status, :wait})
@@ -44,27 +44,27 @@ defmodule Stcl1.UpdatesOperator do
       end
 
     message = compose_questions_list(questions)
-    send_to_operator_from_bot(bot_token, message)
+    send_to_operator_from_bot(bot_token, operator_chat_id, message)
   end
 
-  def handle_message(bot_token, "/users_count") do
+  def handle_message(bot_token, operator_chat_id, "/users_count") do
     users_count = Users.count()
-    send_to_operator_from_bot(bot_token, "Количество пользователей бота: #{inspect users_count}")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Количество пользователей бота: #{inspect users_count}")
   end
 
   # Stcl1.UpdatesOperator.handle_message("6115660671:AAH-TlDsnfBBmdagZT2LMMkzPAl6XqIpJbM", "/users_dates 2024-01-01")
-  def handle_message(bot_token, "/users_dates " <> start_date) do
+  def handle_message(bot_token, operator_chat_id, "/users_dates " <> start_date) do
     message = compose_users_regs(start_date)
-    send_to_operator_from_bot(bot_token, "Даты регистраций c #{start_date}:\n\n#{message}")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Даты регистраций c #{start_date}:\n\n#{message}")
   end
 
-  def handle_message(bot_token, "/subs_by_date " <> date) do
+  def handle_message(bot_token, operator_chat_id, "/subs_by_date " <> date) do
     message = compose_users_subs_by_date(date)
-    send_to_operator_from_bot(bot_token, message)
+    send_to_operator_from_bot(bot_token, operator_chat_id, message)
   end
 
   # Stcl1.UpdatesOperator.handle_message("qwe", "/ads 2023-01-23T23:50:07 zdarova snup doc")
-  def handle_message(bot_token, "/ads " <> datetime_and_text) do
+  def handle_message(bot_token, operator_chat_id, "/ads " <> datetime_and_text) do
     message =
       with [datetime_iso, text] <- String.split(datetime_and_text, " ", parts: 2),
           {:ok, send_datetime, _} <- DateTime.from_iso8601(datetime_iso <> "+03:00"),
@@ -75,37 +75,37 @@ defmodule Stcl1.UpdatesOperator do
         _ -> "Неверный формат входных данных"
       end
 
-      send_to_operator_from_bot(bot_token, message)
+      send_to_operator_from_bot(bot_token, operator_chat_id, message)
   end
 
-  def handle_message(bot_token, "/delete_ads " <> id_ads) do
+  def handle_message(bot_token, operator_chat_id, "/delete_ads " <> id_ads) do
     Storage.delete_ads(id_ads)
-    send_to_operator_from_bot(bot_token, "Рекламное сообщение с id = #{id_ads} удалено")
+    send_to_operator_from_bot(bot_token, operator_chat_id, "Рекламное сообщение с id = #{id_ads} удалено")
   end
 
-  def handle_message(bot_token, text) do
+  def handle_message(bot_token, operator_chat_id, text) do
     case String.split(text, ["/", " "], parts: 3) do
       ["", _] -> :hueta
-      ["", chat_id, answer] -> send_answer(bot_token, chat_id, answer)
+      ["", chat_id, answer] -> send_answer(bot_token, operator_chat_id, chat_id, answer)
       _ -> :hueta
     end
   end
 
-  def send_answer(bot_token, chat_id, answer) do
+  def send_answer(bot_token, operator_chat_id, chat_id, answer) do
     with {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
       answer = compose_answer(question, answer)
       send_to_customer(bot_token, chat_id, answer)
       Storage.write_question(chat_id, {question_type, question, :done})
       Storage.write_question_log(chat_id, question, question_dt, answer)
-      send_to_operator_from_bot(bot_token, "Ты умничка!")
+      send_to_operator_from_bot(bot_token, operator_chat_id, "Ты умничка!")
     else
       _ ->
-        send_to_operator_from_bot(bot_token, "Что-то не так, возможно ты уже отвечал на этот вопрос")
+        send_to_operator_from_bot(bot_token, operator_chat_id, "Что-то не так, возможно ты уже отвечал на этот вопрос")
     end
   end
 
-  def send_to_operator_from_bot(bot_token, message) do
-    Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
+  def send_to_operator_from_bot(bot_token, operator_chat_id, message) do
+    Telegram.Api.request(bot_token, "sendMessage", chat_id: operator_chat_id, text: message, parse_mode: "Markdown")
   end
 
   def send_to_operator_from_user(bot_token, chat_id, text) do
@@ -121,7 +121,11 @@ defmodule Stcl1.UpdatesOperator do
       Storage.write_question(chat_id, {question_type, text, :wait})
       Users.upsert(%{chat_id: chat_id, in_conversation_with_operator: true})
       message = compose_question(text, chat_id)
-      Telegram.Api.request(bot_token, "sendMessage", chat_id: Settings.operator_chat_id(), text: message, parse_mode: "Markdown")
+
+      Enum.each(Settings.operators(), fn operator ->
+        Telegram.Api.request(bot_token, "sendMessage", chat_id: operator, text: message, parse_mode: "Markdown")
+      end)
+
       :operator_back
     else
       Storage.write_question(chat_id, {question_type, text, :out_of_working_hours})
