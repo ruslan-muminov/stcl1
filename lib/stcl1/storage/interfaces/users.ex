@@ -34,6 +34,10 @@ defmodule Stcl1.Storage.Interfaces.Users do
     update(user, %{state: state})
   end
 
+  def all do
+    User |> Repo.all()
+  end
+
   def count do
     Repo.aggregate(User, :count, :chat_id)
   end

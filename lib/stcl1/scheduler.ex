@@ -52,7 +52,7 @@ defmodule Stcl1.Scheduler do
 
   defp do_send_ads(_bot_token, []), do: :ok
   defp do_send_ads(bot_token, [ads | _]) do
-    users = Storage.users_ext_all()
+    users = Users.all()
     Storage.update_ads_status(ads.id, :done)
 
     Enum.each(users, fn user ->
