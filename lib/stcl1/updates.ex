@@ -6,6 +6,7 @@ defmodule Stcl1.Updates do
   alias Stcl1.Settings
   alias Stcl1.Storage
   alias Stcl1.Storage.Interfaces.Users
+  alias Stcl1.Storage.Schemas.User
 
   def child_spec(_arg) do
     %{
@@ -65,24 +66,23 @@ defmodule Stcl1.Updates do
   end
 
   defp handle_update(update) do
-    with {:ok, {chat_id_int, date, text}} <- parse_update(update),
-         :continue <- skip_outdated_updates(date) do
-      chat_id = to_string(chat_id_int)
-
-      user =
-        case Users.get(chat_id) do
-          nil ->
-            Users.upsert(%{chat_id: chat_id}, [:state, :in_conversation_with_operator, :updated_at])
-            ChatMenuButton.set(chat_id)
-          user ->
-            user
+    case parse_update(update) do
+      {:ok, {chat_id_int, date, text}} ->
+        with :continue <- skip_outdated_updates(date),
+            chat_id <- to_string(chat_id_int),
+            nil <- Users.get(chat_id),
+            {:ok, user} <- Users.upsert(%{chat_id: chat_id}, [:state, :in_conversation_with_operator, :updated_at]),
+            {:ok, true} <- ChatMenuButton.set(chat_id) do
+          Handler.handle_message(user, text)
+        else
+          %User{} = user ->
+            Handler.handle_message(user, text)
+          :skip ->
+            # пропускаем этот апдейт
+            :ok
+          error ->
+            Logger.error("handle_update error: #{inspect error}")
         end
-
-      Handler.handle_message(user, text)
-    else
-      :skip ->
-        # пропускаем этот апдейт
-        :ok
       {:error, :parse_update_error} ->
         # прислали хуйню
         :ok
