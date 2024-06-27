@@ -15,7 +15,7 @@ config :stcl1, :operator,
   acceptable_utc_time: [from: ~T[09:00:00], to: ~T[19:00:00]]
 
 config :stcl1,
-  operators: ["891882667"]
+  operators: ["891882667", "44652195"]
 
 config :secrex,
   # key_file: ".secret-key",
