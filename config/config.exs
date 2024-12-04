@@ -13,7 +13,8 @@ config :logger,
 
 config :logger, :error_log,
   path: "log/error.log",
-  level: :error
+  level: :error,
+  format: "$date $time $metadata[$level] $message\n"
 
 config :mnesia,
   dir: '.mnesia/#{Mix.env}/#{node()}'

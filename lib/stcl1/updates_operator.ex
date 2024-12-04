@@ -75,7 +75,7 @@ defmodule Stcl1.UpdatesOperator do
         _ -> "Неверный формат входных данных"
       end
 
-      send_to_operator_from_bot(bot_token, operator_chat_id, message)
+    send_to_operator_from_bot(bot_token, operator_chat_id, message)
   end
 
   def handle_message(bot_token, operator_chat_id, "/delete_ads " <> id_ads) do
