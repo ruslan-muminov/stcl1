@@ -50,7 +50,7 @@ defmodule Stcl1.Scheduler do
     do_send_ads_by_chunks(bot_token, sorted_ads_list)
   end
 
-  defp do_send_ads_by_chunks(bot_token, []), do: :ok
+  defp do_send_ads_by_chunks(_bot_token, []), do: :ok
   defp do_send_ads_by_chunks(bot_token, [ads | _]) do
     Users.all()
     |> Enum.chunk_every(20)
