@@ -53,19 +53,19 @@ defmodule Stcl1.Scheduler do
   defp do_send_ads_by_chunks(_bot_token, []), do: :ok
   defp do_send_ads_by_chunks(bot_token, [ads | _]) do
     Users.all()
-    |> Enum.chunk_every(20)
+    |> Enum.chunk_every(500)
     |> Enum.each(fn users_chunk ->
       do_send_ads(bot_token, ads, users_chunk)
 
-      :timer.sleep(2000)
+      :timer.sleep(60000)
     end)
 
     Storage.update_ads_status(ads.id, :done)
   end
 
   defp do_send_ads(bot_token, ads, users) do
-    Enum.each(users, fn user ->
-      Task.start(fn ->
+    Task.start(fn ->
+      Enum.each(users, fn user ->
         Telegram.Api.request(
           bot_token,
           "sendMessage",
