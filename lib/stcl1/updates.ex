@@ -4,7 +4,7 @@ defmodule Stcl1.Updates do
   alias Stcl1.ChatMenuButton
   alias Stcl1.Message.Handler
   alias Stcl1.Settings
-  alias Stcl1.Storage
+  alias Stcl1.Storage.Interfaces.Options
   alias Stcl1.Storage.Interfaces.Users
   alias Stcl1.Storage.Schemas.User
 
@@ -49,7 +49,7 @@ defmodule Stcl1.Updates do
           end)
 
         if last_update_id != :empty, do:
-          Storage.write_option(:last_update_id, last_update_id)
+          Options.upsert(%{name: "last_update_id", value_number: last_update_id})
 
         :ok
       error ->
@@ -59,9 +59,9 @@ defmodule Stcl1.Updates do
   end
 
   defp get_last_update_id do
-    case Storage.read_option(:last_update_id) do
+    case Options.get("last_update_id") do
       nil -> 0
-      value -> value
+      option -> option.value_number
     end
   end
 
