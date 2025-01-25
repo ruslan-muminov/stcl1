@@ -32,7 +32,7 @@ defmodule Stcl1.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:telegram, github: "visciang/telegram", tag: "0.22.4"},
+      {:telegram, github: "visciang/telegram", tag: "2.0.0"},
       {:poison, "~> 3.1"},
       {:quantum, "~> 3.0"},
       {:memento, "~> 0.3.2"},
