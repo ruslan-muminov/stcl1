@@ -13,12 +13,12 @@ defmodule Stcl1.Storage do
 
     :timer.sleep(1500)
 
-    Memento.Table.create(Storage.Option, disc_copies: nodes)
-    Memento.Table.create(Storage.User, disc_copies: nodes)
-    Memento.Table.create(Storage.UserExt, disc_copies: nodes)
-    Memento.Table.create(Storage.Question, disc_copies: nodes)
-    Memento.Table.create(Storage.QuestionLog, disc_copies: nodes)
-    Memento.Table.create(Storage.DeferredQuestion, disc_copies: nodes)
+    Memento.Table.create(Storage.Option, disc_copies: nodes) # trash
+    Memento.Table.create(Storage.User, disc_copies: nodes) # trash
+    Memento.Table.create(Storage.UserExt, disc_copies: nodes) # trash
+    Memento.Table.create(Storage.Question, disc_copies: nodes) # trash
+    Memento.Table.create(Storage.QuestionLog, disc_copies: nodes) # trash
+    Memento.Table.create(Storage.DeferredQuestion, disc_copies: nodes) # trash
     Memento.Table.create(Storage.ButtonLog, disc_copies: nodes)
     Memento.Table.create(Storage.Ads, disc_copies: nodes)
     Memento.Table.create(Storage.Lineup, disc_copies: nodes)

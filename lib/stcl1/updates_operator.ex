@@ -3,8 +3,11 @@ defmodule Stcl1.UpdatesOperator do
 
   alias Stcl1.Settings
   alias Stcl1.Storage
+  alias Stcl1.Storage.Interfaces.Questions
+  alias Stcl1.Storage.Interfaces.QuestionsLog
   alias Stcl1.Storage.Interfaces.Users
-  alias Stcl1.Storage.Question
+  # alias Stcl1.Storage.Question
+  alias Stcl1.Storage.Schemas.Question
 
   def handle_message(text, operator_chat_id) do
     bot_token = Settings.bot_token()
@@ -37,12 +40,7 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   def handle_message(bot_token, operator_chat_id, "/questions") do
-    questions =
-      Memento.transaction! fn ->
-        Memento.Query.select(Question, {:==, :status, :wait})
-        # + sort
-      end
-
+    questions = Questions.wait_list()
     message = compose_questions_list(questions)
     send_to_operator_from_bot(bot_token, operator_chat_id, message)
   end
@@ -92,13 +90,18 @@ defmodule Stcl1.UpdatesOperator do
   end
 
   def send_answer(bot_token, operator_chat_id, chat_id, answer) do
-    with {question_type, question, :wait, question_dt} <- Storage.read_question(chat_id) do
-      answer = compose_answer(question, answer)
-      send_to_customer(bot_token, chat_id, answer)
-      Storage.write_question(chat_id, {question_type, question, :done})
-      Storage.write_question_log(chat_id, question, question_dt, answer)
-      send_to_operator_from_bot(bot_token, operator_chat_id, "Ты умничка!")
-    else
+    case Questions.get(chat_id) do
+      %Question{
+        text: text,
+        status: :wait,
+        updated_at: updated_at
+      } ->
+        answer = compose_answer(text, answer)
+        send_to_customer(bot_token, chat_id, answer)
+        Questions.upsert(%{chat_id: chat_id, text: text, status: "done"})
+        QuestionsLog.insert(%{question_text: text, answer_text: answer, chat_id: chat_id, question_dt: updated_at, answer_dt: DateTime.utc_now()})
+        send_to_operator_from_bot(bot_token, operator_chat_id, "Ты умничка!")
+
       _ ->
         send_to_operator_from_bot(bot_token, operator_chat_id, "Что-то не так, возможно ты уже отвечал на этот вопрос")
     end
@@ -113,12 +116,9 @@ defmodule Stcl1.UpdatesOperator do
     acceptable_from_time = Settings.operator_time_from()
     acceptable_to_time = Settings.operator_time_to()
 
-    # рудимент
-    question_type = :other
-
     if curr_time < acceptable_to_time and curr_time > acceptable_from_time do
-      Storage.write_question_log(chat_id, text, nil, nil)
-      Storage.write_question(chat_id, {question_type, text, :wait})
+      QuestionsLog.insert(%{question_text: text, answer_text: nil, chat_id: chat_id, question_dt: DateTime.utc_now(), answer_dt: nil})
+      Questions.upsert(%{chat_id: chat_id, text: text, status: "wait"})
       Users.upsert(%{chat_id: chat_id, in_conversation_with_operator: true})
       message = compose_question(text, chat_id)
 
@@ -128,7 +128,7 @@ defmodule Stcl1.UpdatesOperator do
 
       :operator_back
     else
-      Storage.write_question(chat_id, {question_type, text, :out_of_working_hours})
+      Questions.upsert(%{chat_id: chat_id, text: text, status: "out_of_working_hours"})
       :operator_back_later
     end
   end
@@ -171,15 +171,15 @@ defmodule Stcl1.UpdatesOperator do
   defp compose_questions_list(questions) do
     questions
     |> Enum.map(fn question ->
-      compose_question(question.question, question.chat_id)
+      compose_question(question.text, question.chat_id)
     end)
     |> Enum.join("\n\n")
   end
 
-  defp compose_question(question, chat_id),
-    do: "/#{chat_id} #{question}"
+  defp compose_question(question_text, chat_id),
+    do: "/#{chat_id} #{question_text}"
 
 
-  defp compose_answer(question, answer),
-    do: "_#{question}_\n\n#{answer}"
+  defp compose_answer(question_text, answer),
+    do: "_#{question_text}_\n\n#{answer}"
 end
