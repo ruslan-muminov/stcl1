@@ -93,7 +93,7 @@ defmodule Stcl1.UpdatesOperator do
     case Questions.get(chat_id) do
       %Question{
         text: text,
-        status: :wait,
+        status: "wait",
         updated_at: updated_at
       } ->
         answer = compose_answer(text, answer)
