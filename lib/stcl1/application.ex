@@ -12,14 +12,10 @@ defmodule Stcl1.Application do
   def start(_type, _args) do
     Storage.init()
 
-    # children = [
-    #   Stcl1.Repo,
-    #   Scheduler,
-    #   Updates
-    # ]
-
     children = [
-      Stcl1.Repo
+      Stcl1.Repo,
+      Scheduler,
+      Updates
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
